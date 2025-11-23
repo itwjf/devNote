@@ -74,6 +74,9 @@ public class BlogController {
             String username = authentication.getName();
             User currentUser = userRepository.findByUsername(username);
 
+            //传入用户完整信息
+            model.addAttribute("currentUser",currentUser);
+
             //拿到当前登录用户发布的文章
             List<Post> ownPosts = postRepository.findByAuthorOrderByCreatedAtDesc(currentUser);
 

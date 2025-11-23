@@ -4,34 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <title>DevNote 博客</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-
+    <!-- 先加载 Bootstrap 样式 -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- 再加载你的自定义样式（可覆盖默认样式） -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-4">
-    <h1><a th:href="@{/}">DevNote 博客</a></h1>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand fw-bold text-primary fs-4" th:href="@{/}">DevNote</a>
 
-    <div class="nav-actions">
-        <!-- ✅ 登录状态 -->
-        <div th:if="${#authorization.expression('isAuthenticated()')}">
-<!--            显示用户名，点击用户名来到个人主页-->
-            <span>欢迎,<a th:href="@{'/user/' + ${#authentication.getName()}}" class="author-link" th:text="${#authentication.getName()}"></a> </span>
-            <a th:href="@{/posts/new}" class="btn">写新文章</a>
+            <!-- 用户菜单（右侧） -->
+            <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
+                <!-- 头像占位（未来可替换为真实头像） -->
+                <div class="dropdown">
+                    <a class="d-flex align-items-center text-decoration-none dropdown-toggle"
+                       href="#" role="button" data-bs-toggle="dropdown">
+                        <!-- 动态头像：优先用 currentUser.avatar，否则用默认图 -->
+                        <img th:src="${currentUser?.avatar ?: '/images/default-avatar.png'}"
+                             class="rounded-circle me-2"
+                             width="32"
+                             height="32"
+                             alt="头像">
 
-            <!-- 🔒 安全退出（POST 方式） -->
-            <form th:action="@{/logout}" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-logout">退出</button>
-            </form>
+                        <span th:text="${#authentication.name}" class="text-dark"></span>
+                    </a>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item"
+                               th:href="@{'/user/' + ${#authentication.name}}">
+                                个人主页
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/posts/new}">
+                                ✍️ 写新文章
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="d-grid">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    🔒 退出登录
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 未登录时 -->
+            <div sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}" class="btn btn-outline-primary btn-sm me-2">登录</a>
+                <a th:href="@{/register}" class="btn btn-primary btn-sm">注册</a>
+            </div>
         </div>
-
-        <!-- 🚪 未登录状态 -->
-        <div th:if="${!#authorization.expression('isAuthenticated()')}">
-            <a th:href="@{/login}" class="btn">登录</a>
-            <a th:href="@{/register}" class="btn">注册</a>
-            <span class="tip">请先登录后才能写文章</span>
-        </div>
-    </div>
+    </nav>
 
     <div th:if="${message}" class="alert alert-success" role="alert">
         <span th:text="${message}"></span>
@@ -68,5 +101,9 @@
         暂无文章，快去 <a href="/posts/new">写一篇</a> 吧！
     </div>
 </div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+
+</script>
 </body>
 </html>

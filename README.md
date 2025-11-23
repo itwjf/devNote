@@ -44,8 +44,8 @@ com.example.devnote
 ├── controller # 控制层：处理请求
 ├── service # 业务逻辑层
 ├── repository # 数据访问层（JPA接口）
-├── entity # 数据实体类（User / Post / Follow）
-├── config # 安全与配置类
+├── entity # 数据实体类（User / Post / Follow / Like / Favorite / Comment）
+├── config # 安全与配置类(Spring Security配置 / WebConfig)
 └── templates # 前端模板 (Thymeleaf)
 ```
 
