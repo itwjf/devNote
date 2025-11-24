@@ -1,109 +1,69 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>DevNote 博客</title>
-    <!-- 先加载 Bootstrap 样式 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 先加载 Bootstrap 样式（本地文件） -->
     <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
-    <!-- 再加载你的自定义样式（可覆盖默认样式） -->
+    <!-- 加载 Bootstrap Icons（使用CDN，本地没有此文件） -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- 再加载你的自定义样式（本地文件） -->
     <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-4">
-    <!-- 顶部导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
-        <div class="container">
-            <!-- Logo -->
-            <a class="navbar-brand fw-bold text-primary fs-4" th:href="@{/}">DevNote</a>
-
-            <!-- 用户菜单（右侧） -->
-            <div class="d-flex align-items-center" sec:authorize="isAuthenticated()">
-                <!-- 头像占位（未来可替换为真实头像） -->
-                <div class="dropdown">
-                    <a class="d-flex align-items-center text-decoration-none dropdown-toggle"
-                       href="#" role="button" data-bs-toggle="dropdown">
-                        <!-- 动态头像：优先用 currentUser.avatar，否则用默认图 -->
-                        <img th:src="${currentUser?.avatar ?: '/images/default-avatar.png'}"
-                             class="rounded-circle me-2"
-                             width="32"
-                             height="32"
-                             alt="头像">
-
-                        <span th:text="${#authentication.name}" class="text-dark"></span>
-                    </a>
-
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item"
-                               th:href="@{'/user/' + ${#authentication.name}}">
-                                个人主页
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item" th:href="@{/posts/new}">
-                                ✍️ 写新文章
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form th:action="@{/logout}" method="post" class="d-grid">
-                                <button type="submit" class="dropdown-item text-danger">
-                                    🔒 退出登录
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+    <!-- 引入导航栏片段 -->
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    
+    <!-- 简单的内容，先测试基础功能 -->
+    <h1>欢迎来到 DevNote</h1>
+    <p>这是一个简化版本的首页，用于测试模板解析。</p>
+    
+    <!-- 简单的变量显示，测试Thymeleaf表达式 -->
+    <p th:if="${currentUsername}">当前登录用户: <span th:text="${currentUsername}"></span></p>
+    <p th:unless="${currentUsername}">您尚未登录</p>
+    
+    <!-- 测试文章列表 -->
+    <h2>最新文章</h2>
+    
+    <!-- 文章列表 -->
+    <div class="container mt-4">
+        <div th:if="${not posts.empty}">
+            <div class="row">
+                <div class="col-12" th:each="post : ${posts}">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="card-title mb-0"><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a></h2>
+                        <div>
+                            <span th:if="${post.visibility == 'PUBLIC'}" class="badge bg-primary">公开</span>
+                            <span th:if="${post.visibility == 'FOLLOWERS'}" class="badge bg-info">粉丝可见</span>
+                            <span th:if="${post.visibility == 'PRIVATE'}" class="badge bg-secondary">私密</span>
+                        </div>
+                    </div>
+                    <p class="card-text" th:text="${post.content}"></p>
+                </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- 未登录时 -->
-            <div sec:authorize="!isAuthenticated()">
-                <a th:href="@{/login}" class="btn btn-outline-primary btn-sm me-2">登录</a>
-                <a th:href="@{/register}" class="btn btn-primary btn-sm">注册</a>
-            </div>
         </div>
-    </nav>
-
-    <div th:if="${message}" class="alert alert-success" role="alert">
-        <span th:text="${message}"></span>
-    </div>
-
-    <!-- ✅ 文章列表 -->
-    <div th:if="${posts}" th:each="post : ${posts}" class="card mb-3 shadow-sm">
-        <div class="card-body">
-<!--            标题 ：点击标题跳转至文章详情页面-->
-            <h5 class="card-title">
-                <a th:href="@{/posts/{id}(id=${post.id})}"
-                   th:text="${post.title}"
-                   class="text-decoration-none text-dark"></a>
-            </h5>
-
-            <p th:text="${#strings.abbreviate(post.content, 100)}" class="card-text text-muted"></p>
-
-            <div class="d-flex justify-content-between text-secondary small">
-<!--                跳转显示用户主页-->
-                <p>
-                    作者：
-                    <a th:href="@{'/user/' + ${post.author.username}}" class="author-link"
-                       th:text="${post.author.username}"></a>
-                </p>
-
-<!--                显示文章创建时间-->
-                <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
-            </div>
+        <div th:unless="${not posts.empty}" class="alert alert-info">
+            暂无文章
         </div>
     </div>
-
-    <!-- 没有文章时的提示 -->
-    <div th:if="${#lists.isEmpty(posts)}" class="alert alert-info">
-        暂无文章，快去 <a href="/posts/new">写一篇</a> 吧！
+    <div th:if="${posts}">
+        <p>共有 <span th:text="${posts.size()}"></span> 篇文章</p>
+    </div>
+    <div th:unless="${posts} and not posts.empty">
+        <p>暂无文章</p>
     </div>
 </div>
-
-<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-
-</script>
+    
+    <!-- 加载 Bootstrap JavaScript（本地文件） -->
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    
+    <!-- 如果有自定义脚本，可以放在这里 -->
+    <!-- <script th:src="@{/js/main.js}"></script> -->
 </body>
 </html>

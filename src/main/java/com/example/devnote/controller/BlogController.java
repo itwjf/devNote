@@ -66,9 +66,14 @@ public class BlogController {
     @GetMapping({"/","/posts"})
     public String index(Model model,Authentication authentication) {
         List<Post> visiblePosts = new ArrayList<>();
+        
+        // 始终设置currentUsername，方便前端判断登录状态
+        String currentUsername = (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals("anonymousUser")) 
+            ? authentication.getName() : null;
+        model.addAttribute("currentUsername", currentUsername);
 
-        //如果未登录，则只允许查看PUBLIC公开权限的文章
-        if (authentication == null){
+        //如果未登录或未认证，则只允许查看PUBLIC公开权限的文章
+        if (authentication == null || !authentication.isAuthenticated() || authentication.getName().equals("anonymousUser")){
             visiblePosts = postRepository.findByVisibilityOrderByCreatedAtDesc("PUBLIC");
         }else {
             String username = authentication.getName();
@@ -77,13 +82,13 @@ public class BlogController {
             //传入用户完整信息
             model.addAttribute("currentUser",currentUser);
 
-            //拿到当前登录用户发布的文章
+            //拿到当前登录用户发布的所有文章（包括PUBLIC、FOLLOWERS和PRIVATE）
             List<Post> ownPosts = postRepository.findByAuthorOrderByCreatedAtDesc(currentUser);
 
             //拿到公开文章
             List<Post> publicPosts = postRepository.findByVisibilityOrderByCreatedAtDesc("PUBLIC");
 
-            //拿到当前登录用户关注的人的发布的”粉丝可见“的文章
+            //拿到当前登录用户关注的人的发布的"粉丝可见"的文章
             List<User> following = followRepository.findFollowingUsers(currentUser);
 
             List<Post> followerVisiblePosts = new ArrayList<>();
@@ -91,15 +96,15 @@ public class BlogController {
                 followerVisiblePosts.addAll(postRepository.findByAuthorAndVisibilityOrderByCreatedAtDesc(followed, "FOLLOWERS"));
             }
 
-            // 合并
-            visiblePosts.addAll(publicPosts);
+            // 合并：自己的文章 + 公开文章 + 关注用户的粉丝可见文章
             visiblePosts.addAll(ownPosts);
+            visiblePosts.addAll(publicPosts);
             visiblePosts.addAll(followerVisiblePosts);
 
             // 去重（防止同一篇文章多次出现）
             visiblePosts = visiblePosts.stream()
                     .distinct()
-                    //根据创建时间去重
+                    //按创建时间倒序排序，最新的文章在前面
                     .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                     .toList();
         }
