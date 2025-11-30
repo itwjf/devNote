@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${user?.username} + '的主页'">用户主页</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .avatar {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+    }
+    a:not(.btn) {
+      color: inherit;
+      text-decoration: none;
+    }
+    a:not(.btn):hover {
+      color: #0d6efd;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+
+  <h1 th:text="${user?.username} + ' 的主页'"></h1>
+
+  <!-- 个人信息 -->
+  <div class="user-info mb-4 d-flex align-items-center">
+    <img th:src="${user?.avatar != null ? user.avatar : '/images/default-avatar.png'}"
+         alt="头像" class="avatar rounded-circle me-3">
+    <p th:text="${user?.bio != null ? user.bio : '这个人很神秘，什么也没写~'}" class="mb-0"></p>
+  </div>
+
+  <!-- 仅本人可见操作 -->
+  <div th:if="${isSelf}" class="profile-actions mb-4">
+    <a th:href="@{'/user/' + ${user?.username} + '/edit'}" class="btn btn-outline-primary me-2">编辑资料</a>
+    <a th:href="@{/settings/privacy}" class="btn btn-outline-secondary">隐私设置</a>
+  </div>
+
+  <!-- 粉丝 & 关注 -->
+  <div class="d-flex gap-4 mb-4">
+    <p class="mb-0">
+      <span th:if="${isSelf || user?.showFollowers}">
+        <a th:href="@{/user/{username}/followers(username=${user?.username})}">粉丝</a>
+      </span>
+      <span th:unless="${isSelf || user?.showFollowers}">粉丝</span>
+      <span th:text="'：' + ${followersCount}"></span>
+    </p>
+
+    <p class="mb-0">
+      <span th:if="${isSelf || user?.showFollowing}">
+        <a th:href="@{/user/{username}/following(username=${user?.username})}">关注</a>
+      </span>
+      <span th:unless="${isSelf || user?.showFollowing}">关注</span>
+      <span th:text="'：' + ${followingCount}"></span>
+    </p>
+  </div>
+
+  <!-- 文章统计信息 -->
+  <div class="stats-section mb-4">
+    <!-- 文章总数 -->
+    <p class="mb-2">
+      文章总数：<span th:text="${totalPosts}"></span>
+    </p>
+    
+    <!-- 点赞文章总数 -->
+    <p class="mb-2">
+      <a th:href="@{/user/{username}/liked-posts(username=${user?.username})}" th:text="'点赞文章：' + ${totalLikedPosts}">点赞文章：0</a>
+    </p>
+    
+    <!-- 收藏文章总数 -->
+    <p class="mb-2">
+      收藏文章：<span th:text="${totalFavoritedPosts}"></span>
+    </p>
+  </div>
+
+  <!-- 关注/取消关注按钮（非本人时显示） -->
+  <div th:if="${!isSelf}" class="mt-4">
+    <button id="followBtn"
+            class="btn"
+            th:classappend="${isFollowing} ? 'btn-secondary' : 'btn-primary'"
+            th:data-username="${user?.username}"
+            th:data-following="${isFollowing}">
+      <span th:text="${isFollowing} ? '取消关注' : '关注'"></span>
+    </button>
+  </div>
+
+  <hr class="my-4">
+  <p><a th:href="@{/}" class="btn btn-link p-0">← 返回首页</a></p>
+
+</div>
+
+<script>
+  // 简化的关注/取消关注功能
+  document.addEventListener('DOMContentLoaded', function() {
+    var followBtn = document.getElementById('followBtn');
+    
+    if (!followBtn) return;
+    
+    followBtn.addEventListener('click', function() {
+      var username = this.getAttribute('data-username');
+      var isFollowing = this.getAttribute('data-following') === 'true';
+      
+      if (!username) {
+        alert('用户名错误');
+        return;
+      }
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open(isFollowing ? 'DELETE' : 'POST', '/api/follow/' + username);
+      xhr.withCredentials = true;
+      
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            var data = JSON.parse(xhr.responseText);
+            if (data && data.success) {
+              var newFollowing = !isFollowing;
+              followBtn.setAttribute('data-following', newFollowing.toString());
+              followBtn.querySelector('span').textContent = newFollowing ? '取消关注' : '关注';
+              followBtn.className = 'btn ' + (newFollowing ? 'btn-secondary' : 'btn-primary');
+            }
+          } catch (e) {
+            alert('操作成功');
+          }
+        }
+      };
+      
+      xhr.send();
+    });
+  });
+</script>
+
+</body>
+</html>

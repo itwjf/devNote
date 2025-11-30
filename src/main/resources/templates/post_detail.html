@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${post.title}">文章详情</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+
+  <!-- 标题 -->
+  <h1 th:text="${post.title}" class="post-title"></h1>
+
+  <!-- 元信息 -->
+  <div class="post-meta">
+    <p>作者：
+      <a th:href="@{'/user/' + ${post.author.username}}" class="author-link"
+             th:text="${post.author.username}"></a></p>
+    <p>发布时间：<span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+  </div>
+  <p>可见性：
+    <span th:switch="${post.visibility}">
+    <span th:case="'PUBLIC'">公开</span>
+    <span th:case="'FOLLOWERS'">粉丝可见</span>
+    <span th:case="'PRIVATE'">私密</span>
+  </span>
+  </p>
+
+  <!-- ========================= -->
+  <!-- 点赞 + 收藏 显示部分 -->
+  <!-- ========================= -->
+  <div>
+    <!-- 点赞按钮 -->
+    <button id="like-btn" data-post-id="[[${post.id}]]">🤍 点赞</button>
+    <span id="like-count" th:text="${likeCount}">0</span>
+
+    <!-- 收藏按钮 -->
+    <button id="favorite-btn" data-post-id="[[${post.id}]]">🤍 收藏</button>
+    <span id="favorite-count"  th:text="${favoriteCount}">0</span>
+  </div>
+
+  <!-- 文章内容 -->
+  <div class="post-content" th:utext="${post.content}"></div>
+
+  <hr>
+
+  <!-- 评论区 -->
+  <h2>评论区</h2>
+  <div class="comment-section">
+
+    <!-- 没有评论提示 -->
+    <p th:if="${#lists.isEmpty(post.comments)}">还没有评论，快来抢沙发吧！</p>
+
+    <!-- 评论列表 -->
+    <div th:each="comment : ${post.comments}" class="comment">
+      <div class="comment-header">
+        <strong th:text="${comment.author.username}">评论者</strong>
+        <span class="comment-date"
+              th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+      </div>
+      <p th:text="${comment.content}"></p>
+
+      <!-- 删除评论按钮 -->
+      <form th:if="${#authentication.name == comment.author.username or #authentication.name == post.author.username}"
+            th:action="@{'/posts/' + ${post.id} + '/comments/' + ${comment.id} + '/delete'}"
+            method="post"
+            onsubmit="return confirm('确定要删除这条评论吗？');"
+            style="display:inline;">
+        <button type="submit" class="btn-delete">删除</button>
+      </form>
+
+      <!-- 子评论区 -->
+      <div th:if="${not #lists.isEmpty(comment.replies)}" class="child-comments">
+        <div th:each="reply : ${comment.replies}" class="reply">
+          <div class="comment-header">
+            <strong th:text="${reply.author.username}">评论者</strong>
+            <span class="comment-date"
+                  th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+          </div>
+          <p th:text="${reply.content}"></p>
+
+          <!-- 删除子评论按钮 -->
+          <form th:if="${#authentication.name == reply.author.username or #authentication.name == post.author.username}"
+                th:action="@{'/posts/' + ${post.id} + '/comments/' + ${reply.id} + '/delete'}"
+                method="post"
+                onsubmit="return confirm('确定要删除这条评论吗？');"
+                style="display:inline;">
+            <button type="submit" class="btn-delete">删除</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- 回复评论按钮 -->
+      <div th:if="${#authorization.expression('isAuthenticated()')}">
+        <form th:action="@{'/posts/' + ${post.id} + '/comments'}" method="post">
+          <textarea name="content" rows="3" cols="50" th:placeholder="'回复'+ ${comment.author.username} + '的评论' " required></textarea>
+          <input type="hidden" name="parentId" th:value="${comment.id}"/>
+          <br>
+          <button type="submit" class="btn-submit">提交回复</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 发表评论 -->
+  <div th:if="${#authorization.expression('isAuthenticated()')}" class="comment-form">
+    <h3>发表评论</h3>
+    <form th:action="@{'/posts/' + ${post.id} + '/comments'}" method="post">
+      <textarea name="content" rows="4" cols="60" placeholder="写下你的评论..." required></textarea>
+      <br>
+      <button type="submit" class="btn-submit">提交评论</button>
+    </form>
+  </div>
+
+  <!-- 未登录提示 -->
+  <p th:if="${!#authorization.expression('isAuthenticated()')}">
+    <a th:href="@{/login}">登录</a> 后才能发表评论。
+  </p>
+
+  <hr>
+
+  <p><a th:href="@{/}">返回首页</a></p>
+</div>
+
+
+<!-- ========================= -->
+<!-- JavaScript 逻辑部分 -->
+<!-- ========================= -->
+<script th:inline="javascript">
+  console.log("✅ JS已加载");
+  document.addEventListener("DOMContentLoaded", function () {
+
+    const postId = /*[[${post.id}]]*/ 0;   // 让Thymeleaf渲染出真实的数字
+    console.log("postId =", postId);
+
+    // 获取按钮与计数元素
+    const likeBtn = document.getElementById("like-btn");
+    const likeCountSpan = document.getElementById("like-count");
+    const favoriteBtn = document.getElementById("favorite-btn");
+    const favoriteCountSpan = document.getElementById("favorite-count");
+
+    // ✅ 初始化点赞状态
+    fetch(`/like/status/${postId}`)
+            .then(res => res.json())
+            .then(data => {
+              likeBtn.textContent = data.liked ? "❤️ 已点赞" : "🤍 点赞";
+              likeCountSpan.textContent = data.likeCount;
+            })
+            .catch(err => console.error("初始化点赞状态失败:", err));
+
+    // ✅ 初始化收藏状态
+    fetch(`/favorite/status/${postId}`)
+            .then(res => res.json())
+            .then(data => {
+              favoriteBtn.textContent = data.favorited ? "⭐ 已收藏" : "☆ 收藏";
+              favoriteCountSpan.textContent = data.favoriteCount;
+            })
+            .catch(err => console.error("初始化收藏状态失败:", err));
+
+    // ✅ 点赞点击事件
+    likeBtn.addEventListener("click", function () {
+      fetch(`/like/${postId}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      })
+              .then(res => res.json())
+              .then(data => {
+                likeBtn.textContent = data.liked ? "❤️ 已点赞" : "🤍 点赞";
+                likeCountSpan.textContent = data.likeCount;
+              })
+              .catch(err => console.error("点赞失败:", err));
+    });
+
+    // ✅ 收藏点击事件
+    favoriteBtn.addEventListener("click", function () {
+      fetch(`/favorite/${postId}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      })
+              .then(res => res.json())
+              .then(data => {
+                favoriteBtn.textContent = data.favorited ? "⭐ 已收藏" : "☆ 收藏";
+                favoriteCountSpan.textContent = data.favoriteCount;
+              })
+              .catch(err => console.error("收藏失败:", err));
+    });
+
+    console.log("postId =", postId);
+  });
+</script>
+</body>
+</html>

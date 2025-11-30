@@ -1,0 +1,40 @@
+# application.yml
+file:
+  upload-dir: D:/devnote/uploads/   # 👉 本地存储目录，可改成任意本地路径
+spring:
+  datasource:
+    # 连接本地 MySQL，使用端口 3306
+    url: jdbc:mysql://localhost:3306/devnote?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # 自动建表
+    show-sql: true       # 打印 SQL
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect  # MySQL 8 方言
+        format_sql: true  # 格式化 SQL 输出
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+  web:
+    resources:
+      add-mappings: true  # 启用自动映射静态资源路径，使CSS、JS等资源能正常加载
+server:
+  error:
+    whitelabel:
+      enabled: false   # 禁用 Spring Boot 默认的白标签错误页
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${profileUser.username + ' 的关注 - DevNote'}">用户关注 - DevNote</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 800px;
+      background-color: #fafafa;
+      color: #333;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #222;
+    }
+    .user-card {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+      background-color: #ddd;
+    }
+    .pagination {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .pagination a {
+      margin: 0 6px;
+      text-decoration: none;
+      color: #007bff;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .pagination a:hover {
+      background-color: #f0f8ff;
+    }
+    .pagination .current {
+      font-weight: bold;
+      color: #333;
+      background-color: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .empty-message {
+      color: #666;
+      font-style: italic;
+      padding: 20px 0;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<h2>
+  <span th:text="${profileUser.username}"></span> 的关注
+  (<span th:text="${followingPage.totalElements}"></span>)
+</h2>
+
+<div th:if="${followingPage.totalElements == 0}">
+  <p class="empty-message">暂无关注的用户</p>
+</div>
+
+<div th:unless="${followingPage.totalElements == 0}">
+  <div class="user-card" th:each="user : ${followingPage.content}">
+    <img th:src="${user.avatar != null ? user.avatar : '/images/default-avatar.png'}"
+         th:alt="${user.username}"
+         class="avatar"/>
+    <span th:text="${user.username}"></span>
+  </div>
+</div>
+
+<!-- 分页控件 -->
+<div class="pagination" th:if="${followingPage.totalPages > 1}">
+  <a th:if="${followingPage.number > 0}"
+     th:href="@{/user/{username}/following(username=${profileUser.username}, page=${followingPage.number - 1})}">
+    上一页
+  </a>
+
+  <span th:each="i : ${#numbers.sequence(0, followingPage.totalPages - 1)}">
+        <a th:if="${i != followingPage.number}"
+           th:href="@{/user/{username}/following(username=${profileUser.username}, page=${i})}"
+           th:text="${i + 1}">1</a>
+        <span th:if="${i == followingPage.number}" class="current" th:text="${i + 1}">1</span>
+    </span>
+
+  <a th:if="${followingPage.number + 1 < followingPage.totalPages}"
+     th:href="@{/user/{username}/following(username=${profileUser.username}, page=${followingPage.number + 1})}">
+    下一页
+  </a>
+</div>
+
+<a th:href="@{/user/{username}(username=${profileUser.username})}"
+   class="back-link">
+  &larr; 返回
+  <span th:text="${profileUser.username}"></span>
+  的主页
+</a>
+
+</body>
+</html>
