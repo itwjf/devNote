@@ -74,7 +74,7 @@ public class LikePostApiController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/api/posts/{postId}/unlike")
+    @DeleteMapping("/posts/{postId}/unlike")
     public ResponseEntity<?> unlikePost(@PathVariable Long postId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).build();
