@@ -9,6 +9,11 @@
 
 <div class="container">
   <h2 th:text="${user.username} + ' 的点赞文章'"></h2>
+  <!-- 返回个人主页按钮 -->
+  <a th:href="@{/user/{username}(username=${user.username})}"
+     style="display: inline-block; margin-bottom: 15px; color: #007bff; text-decoration: none;">
+    ← 返回 [[${user.username}]] 的个人主页
+  </a>
 
     <div id = "liked-posts-container"> </div>
   <!-- AJAX 动态填充 -->

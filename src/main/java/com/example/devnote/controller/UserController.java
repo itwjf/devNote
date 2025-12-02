@@ -254,19 +254,25 @@ public class UserController {
      */
     @GetMapping("/user/{username}/liked-posts")
     public String viewLikedPostsPage(
-            @PathVariable String username,
-            Authentication authentication,
-            Model model,
-            @PageableDefault(size = 5) Pageable pageable) {
+            @PathVariable String username, // 目标用户名
+            Authentication authentication, // 当前登录用户认证信息
+            Model model, // 模型传递数据到视图
+            @PageableDefault(size = 5) Pageable pageable) // 分页参数
+    {
 
+        // 查找目标用户
         User targetUser = userService.findByUsername(username);
+
+        // 用户不存在处理
         if (targetUser == null) {
             model.addAttribute("errorCode", "404");
             model.addAttribute("errorMessage", "用户不存在");
             return "error";
         }
 
+        // 获取当前登录用户
         User currentUser = getLoggedInUser(authentication);
+        // 判断是否为本人
         boolean isSelf = currentUser != null && currentUser.getId().equals(targetUser.getId());
 
         // 权限检查：非本人 且 点赞列表未公开 → 拒绝访问

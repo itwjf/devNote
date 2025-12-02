@@ -9,6 +9,8 @@ public class DevnoteApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DevnoteApplication.class, args);
 	}
+	
+
 
 }
 

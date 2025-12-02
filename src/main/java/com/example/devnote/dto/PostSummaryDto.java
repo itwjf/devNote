@@ -1,5 +1,6 @@
 package com.example.devnote.dto;
 
+
 public class PostSummaryDto {
     private Long id;
     private String title;
@@ -13,5 +14,6 @@ public class PostSummaryDto {
     // getters
     public Long getId() { return id; }
     public String getTitle() { return title; }
+
 
 }
