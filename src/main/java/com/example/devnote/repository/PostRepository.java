@@ -34,22 +34,18 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     // 暂时不需要写任何方法
     // 因为父接口已经提供了常用 CRUD 操作
 
+    //
     Long countByAuthor(User user);
 
-    /**
-     * 根据作者查找文章 - 预加载author关联
-     * @param user 作者
-     * @return 文章列表
-     */
+    
+    // 根据作者查找文章
+    // 使用 JOIN FETCH 来预加载 author 关联
     @Query("SELECT p FROM Post p JOIN FETCH p.author WHERE p.author = :user ORDER BY p.createdAt DESC")
     List<Post> findByAuthorOrderByCreatedAtDesc(User user);
 
-    /**
-     * 查找用户点赞过的文章（分页版）
-     * @param userId 用户ID
-     * @param pageable 分页参数
-     * @return 分页后的文章列表
-     */
+    
+    // 查找用户点赞过的文章（分页版）
+    // 使用 JOIN 和 WHERE 子句来查询用户点赞过的文章
     @Query("""
         SELECT p FROM Post p
         JOIN Like l ON l.post = p
@@ -57,20 +53,14 @@ public interface PostRepository extends JpaRepository<Post,Long> {
         ORDER BY l.likedAt DESC
         """)
     Page<Post> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
-
-
-
-
-    /**
-     * 根据作者查找文章（分页版）- 预加载author关联
-     * @param user 作者
-     * @param pageable 分页参数
-     * @return 分页后的文章列表
-     */
+    
+    // 根据作者查找文章（分页版）
+    // 使用 JOIN FETCH 来预加载 author 关联
     @Query("SELECT p FROM Post p JOIN FETCH p.author WHERE p.author = :user ORDER BY p.createdAt DESC")
     Page<Post> findByAuthorOrderByCreatedAtDesc(User user, Pageable pageable);
 
-    //根据权限查文章 - 预加载author关联
+    //根据权限查文章 
+    // 使用 JOIN FETCH 来预加载 author 关联
     @Query("SELECT p FROM Post p JOIN FETCH p.author WHERE p.visibility = :visibility ORDER BY p.createdAt DESC")
     List<Post> findByVisibilityOrderByCreatedAtDesc(String visibility);
 

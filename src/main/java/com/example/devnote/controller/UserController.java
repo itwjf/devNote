@@ -179,8 +179,7 @@ public class UserController {
         return "redirect:/user/" + encodedUsername;
     }
 
-    // UserController.java
-
+    // 粉丝列表
     @GetMapping("/user/{username}/followers")
     public String viewFollowersPage(
             @PathVariable String username,

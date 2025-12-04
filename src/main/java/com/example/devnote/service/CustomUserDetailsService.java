@@ -32,10 +32,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Spring Security 内置的 User 对象（不同于我们自己的 User 实体类）
         // 这里把数据库中的用户转换成框架能识别的形式
+        // 注意：User.withUsername().roles(...) 会自动为角色添加 "ROLE_" 前缀，
+        // 因此我们需要传入不带前缀的角色名（例如 "USER"）。
+        String role = user.getRole();
+        if (role == null || role.trim().isEmpty()) {
+            role = "USER"; // 默认角色
+        } else {
+            role = role.trim();
+            if (role.startsWith("ROLE_")) {
+                role = role.substring("ROLE_".length());
+            }
+        }
+
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
-                .roles("USER")//默认给普通用户角色
+                .roles(role)
                 .build();
 
     }

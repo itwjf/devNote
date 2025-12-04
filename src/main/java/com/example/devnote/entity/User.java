@@ -18,8 +18,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    /** 邮箱（数据库中为非空字段，默认空字符串以避免插入失败） */
     @Column(nullable = false)
-    private String role = "ROLE_USER";// 默认角色（Spring Security 规范要求前缀 ROLE_）
+    private String email = "";
+
+    //用户角色
+    @Column(nullable = false)
+    private String role = "USER";// 默认角色（Spring Security 规范要求前缀 ROLE_）
 
     /** 用户头像URL */
     private String avatar = "/images/default-avatar.png";
@@ -84,6 +89,14 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getRole() {

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+// 这个类是用来配置静态资源的，比如图片，css，js等
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir}")

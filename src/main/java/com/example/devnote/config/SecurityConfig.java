@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * 作用：定义哪些路径需要认证，哪些路径可以匿名访问
  */
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
@@ -35,7 +37,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setUserDetailsService(userDetailsService); //
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -45,6 +47,9 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // 注册自定义的 DaoAuthenticationProvider，让 AuthenticationManager 能找到它
+        http.authenticationProvider(authenticationProvider());
+
         http
                 .authorizeHttpRequests(auth -> auth
                         // 放行登录、注册、静态资源
