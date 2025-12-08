@@ -14,6 +14,14 @@ import java.util.List;
  */
 @Entity
 @Table(name = "posts")
+@NamedEntityGraph( // 定义一个命名的 EntityGraph，用于指定加载策略
+        name = "Post.withAuthorAndComments",
+        attributeNodes = {
+                @NamedAttributeNode("author"), // 如果需要加载作者
+                
+                @NamedAttributeNode("comments") // 如果需要加载评论
+        }
+)
 public class Post {
     /**
      * @Id 表示这是主键

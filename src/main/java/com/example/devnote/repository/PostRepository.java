@@ -6,6 +6,7 @@ import com.example.devnote.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,6 +38,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     //
     Long countByAuthor(User user);
 
+    // 查询所有文章，并预加载 author 和 comments 关联
+    @Override
+    @EntityGraph("Post.withAuthorAndComments") // 使用命名实体图 
+    List<Post> findAll();
     
     // 根据作者查找文章
     // 使用 JOIN FETCH 来预加载 author 关联
