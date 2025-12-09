@@ -27,6 +27,15 @@ spring:
   web:
     resources:
       add-mappings: true  # 启用自动映射静态资源路径，使CSS、JS等资源能正常加载
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    database: mysql
+
+
+
 server:
   error:
     whitelabel:
@@ -38,3 +47,5 @@ server:
       charset: UTF-8
       force: true
       enabled: true
+
+
