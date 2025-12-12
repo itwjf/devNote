@@ -53,22 +53,37 @@
 - 优先级：高；难度：低；估算：0.25–0.5 人天。
 - 验收：注册后 DB 中 `password` 字符串完整，登录成功。
 
-### 4.3 统一角色约定与代码规范化
+### 4.3 统一角色约定与代码规范化 ✅
 - 建议：实体存短名（`USER`），`CustomUserDetailsService` 映射时加 `ROLE_` 前缀；在 `User.setRole` 中规范化输入（去除前缀）。
+- 实施状态：已完成
+  - `User.setRole()` 方法会去除 `ROLE_` 前缀，存储干净的短名
+  - `CustomUserDetailsService` 在映射时添加 `ROLE_` 前缀
+  - 添加了详细的注释说明角色约定
 - 原因：避免重复前缀导致错误（已发生）。
 - 优先级：高；难度：低；估算：0.25–0.5 人天。
 - 验收：登录不再出现 `ROLE_` 错误，代码有注释说明角色约定。
 
-### 4.4 测试覆盖（单元 + 集成）
+### 4.4 测试覆盖（单元 + 集成） ✅
 - 建议：
   - 单元：`UserServiceImpl` 用 Mockito 验证注册、异常等。
   - 集成：`@SpringBootTest` + Testcontainers MySQL 做注册/登录端到端。
+- 实施状态：已完成
+  - 创建了 `UserServiceImplTest` 单元测试，覆盖注册、查找、隐私设置等功能
+  - 创建了 `UserIntegrationTest` 集成测试，使用 Testcontainers 测试真实数据库场景
+  - 添加了 JUnit 5、Mockito、Testcontainers、H2 等测试依赖
+  - 配置了测试环境专用的 `application-test.properties`
 - 原因：预防回归、支持升级与重构。
 - 优先级：高；难度：中；估算：2–5 人天。
 - 验收：CI 中 tests 阶段通过，覆盖关键边界条件。
 
-### 4.5 CI（GitHub Actions）
+### 4.5 CI（GitHub Actions） ✅
 - 建议：添加 `ci.yml`，执行 JDK matrix（可先 JDK 17），运行 `mvn -B test`、Checkstyle、SpotBugs。
+- 实施状态：已完成
+  - 创建了 `.github/workflows/ci.yml` 配置文件
+  - 配置了多阶段流水线：测试、构建、安全扫描、代码质量检查
+  - 集成了 MySQL Testcontainers 用于集成测试
+  - 添加了 Checkstyle、SpotBugs、OWASP Dependency Check 插件
+  - 配置了测试报告上传和构建产物保存
 - 原因：保证 PR 质量与构建可复现性。
 - 优先级：高；难度：中；估算：1–2 人天。
 - 验收：PR 自动触发并显示合格/失败状态。

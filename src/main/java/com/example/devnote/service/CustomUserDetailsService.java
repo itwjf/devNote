@@ -22,6 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.userRepository = userRepository;
     }
 
+    // 根据用户名加载用户信息
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username);
@@ -35,15 +36,19 @@ public class CustomUserDetailsService implements UserDetailsService {
         // 注意：User.withUsername().roles(...) 会自动为角色添加 "ROLE_" 前缀，
         // 因此我们需要传入不带前缀的角色名（例如 "USER"）。
         String role = user.getRole();
+        // 如果角色为空，则设置默认角色
         if (role == null || role.trim().isEmpty()) {
             role = "USER"; // 默认角色
         } else {
+            // 如果角色不为空，则去除前缀（如果有）
             role = role.trim();
+            // 如果角色以 "ROLE_" 开头，则去除前缀
             if (role.startsWith("ROLE_")) {
                 role = role.substring("ROLE_".length());
             }
         }
 
+        // 创建并返回 Spring Security 的 UserDetails 对象
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername())
                 .password(user.getPassword())

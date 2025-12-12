@@ -1,0 +1,38 @@
+-- 测试数据库表结构 (H2 语法)
+CREATE TABLE users (
+    id BIGINT IDENTITY PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER',
+    bio TEXT,
+    avatar VARCHAR(255),
+    show_followers BOOLEAN DEFAULT TRUE,
+    show_following BOOLEAN DEFAULT TRUE,
+    show_likes BOOLEAN DEFAULT TRUE,
+    show_favorites BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE posts (
+    id BIGINT IDENTITY PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    author_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE likes (
+    id BIGINT IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE follows (
+    id BIGINT IDENTITY PRIMARY KEY,
+    follower_id BIGINT NOT NULL,
+    following_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

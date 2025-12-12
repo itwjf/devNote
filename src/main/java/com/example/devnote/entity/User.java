@@ -104,7 +104,20 @@ public class User {
     }
 
     public void setRole(String role) {
-        this.role = role;
+        // 如果 role 为空或空字符串，则设置为默认角色
+        if (role == null || role.trim().isEmpty()) {
+            this.role = "USER"; // 默认角色
+            return;
+        }
+        
+        // 去除 ROLE_ 前缀（如果存在）
+        role = role.trim();
+        if (role.startsWith("ROLE_")) {
+            role = role.substring("ROLE_".length());
+        }
+        
+        // 存储大写的短名
+        this.role = role.toUpperCase();
     }
 
     public String getAvatar() {
