@@ -13,16 +13,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: testpass
-          MYSQL_DATABASE: testdb
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
+  
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -34,17 +25,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Wait for MySQL to be ready
-      run: |
-        echo "Waiting for MySQL to be ready..."
-        for i in {1..30}; do
-          if mysqladmin ping -h"127.0.0.1" -P"3306" -u"root" -p"testpass" --silent; then
-            echo "MySQL is ready!"
-            break
-          fi
-          echo "Attempt $i: MySQL not ready, waiting..."
-          sleep 2
-        done
+
 
     - name: Run tests
       run: |
@@ -54,7 +35,7 @@ jobs:
           -Dspring.datasource.password=testpass \
           -Dspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver \
           -Dspring.jpa.hibernate.ddl-auto=create-drop \
-          -Dspring.flyway.enabled=false
+          -Dspring.flyway.enabled=true
 
     - name: Generate test report
       uses: dorny/test-reporter@v1
