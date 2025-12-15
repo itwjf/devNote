@@ -121,17 +121,6 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-		<!-- Flyway DB migration -->
-		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
-		</dependency>
-
-        <!-- 要支持 MySQL，必须显式添加-->
-		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-mysql</artifactId>
-		</dependency>
 
     </dependencies>
 
@@ -202,32 +191,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.flywaydb</groupId>
-				<artifactId>flyway-maven-plugin</artifactId>
-				<version>10.20.1</version>
-				<configuration>
-					<url>jdbc:mysql://localhost:3306/devnote</url>
-					<user>root</user>
-					<password>123456</password>
-					<locations>
-					<location>filesystem:src/main/resources/db/migration</location>
-					</locations>
-				</configuration>
-				
-				<dependencies>
-					<dependency>
-						<groupId>com.mysql</groupId>
-						<artifactId>mysql-connector-j</artifactId>
-						<version>8.0.33</version>
-					</dependency>
-					<dependency>
-						<groupId>org.flywaydb</groupId>
-						<artifactId>flyway-mysql</artifactId>
-						<version>10.20.1</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
