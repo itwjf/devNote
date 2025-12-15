@@ -6,6 +6,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.validation.FieldError;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 全局异常处理类（Global Exception Handler）
@@ -42,5 +48,25 @@ public class GlobalExceptionHandler {
         model.addAttribute("errorCode", 500);
         model.addAttribute("errorMessage", "服务器内部错误：" + ex.getMessage());
         return "error";
+    }
+
+    /**
+     * 处理校验失败异常，返回 JSON 格式错误信息
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        
+
+        // 创建一个 Map 来存储字段名和错误信息
+        Map<String, String> errors = new HashMap<>();
+
+        // 遍历所有校验错误，将字段名和错误信息添加到 Map 中
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String field = ((FieldError) error).getField();
+            String msg = error.getDefaultMessage();
+            errors.put(field, msg);
+        });
+        return ResponseEntity.badRequest().body(errors);
     }
 }

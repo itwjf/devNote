@@ -1,11 +1,14 @@
 package com.example.devnote.controller;
 
-import com.example.devnote.service.UserService;
+import com.example.devnote.dto.UserRegistrationDto;
 import com.example.devnote.exception.UserAlreadyExistsException;
+import com.example.devnote.service.UserService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import javax.validation.Valid;
 
 @Controller
 public class AuthController {
@@ -29,28 +32,44 @@ public class AuthController {
     }
 
     // 注册用户
-    @PostMapping("/register")
-    public String registerUser(@RequestParam String username,
-                               @RequestParam String password,
-                               @RequestParam String email) {
-        System.out.println("===> 收到注册请求: " + username);
 
+    /**
+     * 注册用户
+     * @Valid 注解用于验证 UserRegistrationDto 对象的字段是否符合要求
+     * BindingResult 对象用于存储验证结果
+     * Model 对象用于向视图传递数据
+     * @param userDto 用户注册信息
+     * @param bindingResult 验证结果
+     * @param model 模型
+     * 
+     */
+    @PostMapping("/register")
+    public String registerUser(@Valid UserRegistrationDto userDto,
+                               BindingResult bindingResult,
+                               Model model) {
+        if (bindingResult.hasErrors()) {
+            return "register";
+        }
+        System.out.println("===> 收到注册请求: " + userDto.getUsername());
         try {
-            userService.register(username, password, email);
-            System.out.println("===> 用户保存成功: " + username);
+            userService.register(userDto.getUsername(),
+                                 userDto.getPassword(),
+                                 userDto.getEmail());
+            System.out.println("===> 用户保存成功: " + userDto.getUsername());
         } catch (UserAlreadyExistsException e) {
-            System.out.println("===> 用户已存在: " + username);
-            return "redirect:/register?exists";
+            System.out.println("===> 用户已存在: " + userDto.getUsername());
+            model.addAttribute("exists", true);
+            return "register";
         } catch (IllegalArgumentException e) {
             System.out.println("===> 注册参数错误: " + e.getMessage());
-            // 邮箱格式或其它参数错误
-            return "redirect:/register?invalidEmail";
+            model.addAttribute("invalidEmail", true);
+            return "register";
         } catch (Exception e) {
             System.out.println("===> 保存用户时出错:");
             e.printStackTrace();
-            return "redirect:/register?error";
+            model.addAttribute("error", true);
+            return "register";
         }
-
         return "redirect:/login?success";
     }
 

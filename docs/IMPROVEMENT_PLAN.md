@@ -93,6 +93,7 @@
 - 原因：安全、易维护、便于前端显示错误。
 - 优先级：中；难度：中；估算：1–2 人天。
 - 验收：表单错误展示规范，异常以统一方式记录。
+- 实施：定义 DTO（如 UserRegistrationDto、LoginDto、PostDto、UserProfileDto），Controller 使用 @Valid+BindingResult 对表单参数校验，GlobalExceptionHandler 捕获校验异常统一返回视图或 JSON。
 
 ### 4.7 邮件验证与密码重置
 - 建议：实现注册邮箱验证（token 存 DB + 过期策略）与密码重置流程。
