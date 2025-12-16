@@ -36,6 +36,17 @@
 | **Lombok**          | 简化实体类代码         |
 | **HTML + CSS**      | 页面展示            |
 
+## 🧰 环境与依赖
+
+- Java 17（建议 OpenJDK/Temurin 17）
+- Maven Wrapper（./mvnw 或 mvnw.cmd，Windows 直接运行 mvnw.cmd）
+- MySQL 8.0+，字符集使用 utf8mb4，时区 Asia/Shanghai，关闭 SSL 以避免连接报错
+- 可选：Docker + docker-compose（如需容器化 MySQL）
+
+验证命令：`java -version`、`./mvnw -v`
+
+建议添加 `.env.example`（示例数据库环境变量），开发者复制 `.env.example` 为 `.env`，并在 IDE 或运行脚本中加载该配置。*** End Patch
+
 ---
 
 ## 🏗️ 系统架构
@@ -88,12 +99,38 @@ com.example.devnote
       password: 你的密码
       driver-class-name: com.mysql.cj.jdbc.Driver
 ```
+   建议先执行以下 SQL 初始化表结构：
+   ```bash
+   mysql -u root -p devnote < src/test/resources/schema.sql
+   ```
 
 ### 启动项目
+```bash
 ./mvnw spring-boot:run
+```
+或先打包再运行：
+```bash
+./mvnw clean package
+java -jar target/devnote-*.jar
+```
 
 ### 访问应用
 http://localhost:8080
+
+### 快速验证（可选）
+- 登录：
+  ```bash
+  curl -X POST http://localhost:8080/login -d "username=test&password=123456"
+  ```
+- 注册：
+  ```bash
+  curl -X POST http://localhost:8080/register -d "username=test&password=12345678&confirmPassword=12345678&email=test@example.com"
+  ```
+
+### 测试与检查
+- 运行所有单元 + 集成测试：`./mvnw test`
+- 检查规范：`./mvnw checkstyle:check`
+- IDE 运行：在 DevnoteApplication main 上右键 Run / Debug。
 
 ## 📝 开发说明
 本项目通过 Spring Boot 提供动态页面服务，不可使用 VS Code Live Server 等静态服务器预览。
