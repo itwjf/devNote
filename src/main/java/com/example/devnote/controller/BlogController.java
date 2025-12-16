@@ -122,9 +122,18 @@ public class BlogController {
      * 显示写新文章的表单页面
      */
     @GetMapping("/posts/new")
-    public String newPostForm(Model model) {
+    public String newPostForm(Model model,Authentication authentication) {
         // 创建一个空的 Post 对象，用于表单绑定
         model.addAttribute("post", new Post());
+
+        // ✅ 添加当前用户名（如果已登录）
+        String currentUsername = null;
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName())) {
+            currentUsername = authentication.getName();
+        }
+        model.addAttribute("currentUsername", currentUsername);
+
         return "new";
     }
 
@@ -226,13 +235,10 @@ public class BlogController {
 
     /**
      * 文件编辑页面
-     * @param id
-     * @param model
-     * @param principal
-     * @return
-     */
+     * */
+
     @GetMapping("/posts/{id}/edit")
-    public String editPOst(@PathVariable Long id, Model model, Principal principal){
+    public String editPOst(@PathVariable Long id, Model model, Principal principal,Authentication authentication){
         Post post = postRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("文章不存在"));
 
@@ -242,8 +248,17 @@ public class BlogController {
 
         //将文章传递给模板
         model.addAttribute("post",post);
+
+        // ✅ 设置 currentUsername 供导航栏使用
+        String currentUsername = (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getName()))
+                ? authentication.getName() : null;
+        model.addAttribute("currentUsername", currentUsername);
+
+
         return "edit_post";
     }
+
 
     /**
      *更新文章内容

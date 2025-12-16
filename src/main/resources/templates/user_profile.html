@@ -3,13 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <title th:text="${user?.username} + '的主页'">用户主页</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap 5.3 CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- 自定义样式（可选补充） -->
+  <link rel="stylesheet" th:href="@{/css/style.css}">
   <style>
+    .profile-card {
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
     .avatar {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       object-fit: cover;
+      border: 3px solid #f8f9fa;
+    }
+    .stat-badge {
+      background: #f8f9fa;
+      padding: 0.5rem 1rem;
+      border-radius: 12px;
+      text-align: center;
+      min-width: 100px;
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+      color: white;
+      border: none;
+    }
+    .btn-gradient:hover {
+      background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+      color: white;
     }
     a:not(.btn) {
       color: inherit;
@@ -19,99 +46,149 @@
       color: #0d6efd;
       text-decoration: underline;
     }
+    .site-header {
+      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    }
+    .header-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
   </style>
 </head>
-<body>
-<div class="container py-4">
+<body class="bg-light">
 
-  <h1 th:text="${user?.username} + ' 的主页'"></h1>
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+  <div class="container-fluid px-4">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
 
-  <!-- 个人信息 -->
-  <div class="user-info mb-4 d-flex align-items-center">
-    <img th:src="${user?.avatar != null ? user.avatar : '/images/default-avatar.png'}"
-         alt="头像" class="avatar rounded-circle me-3">
-    <p th:text="${user?.bio != null ? user.bio : '这个人很神秘，什么也没写~'}" class="mb-0"></p>
+          <li class="nav-item ms-lg-4 d-flex align-items-center gap-2">
+            <img src="/images/default-avatar.png" alt="avatar" class="header-avatar">
+            <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
+          </li>
+        </ul>
+      </div>
+    </nav>
   </div>
+</header>
 
-  <!-- 仅本人可见操作 -->
-  <div th:if="${isSelf}" class="profile-actions mb-4">
-    <a th:href="@{'/user/' + ${user?.username} + '/edit'}" class="btn btn-outline-primary me-2">编辑资料</a>
-    <a th:href="@{/settings/privacy}" class="btn btn-outline-secondary">隐私设置</a>
+<!-- ========== 主内容区 ========== -->
+<main class="py-4">
+  <div class="container">
+    <!-- 用户信息卡片 -->
+    <div class="profile-card bg-white p-5 mb-5 text-center">
+      <img th:src="${user?.avatar != null ? user.avatar : '/images/default-avatar.png'}"
+           alt="头像" class="avatar rounded-circle mb-3 border">
+
+      <h1 class="h2 mb-2 fw-bold" th:text="${user?.username} + ' 的主页'">用户名 的主页</h1>
+
+      <p class="text-muted mb-4"
+         th:text="${user?.bio != null ? user.bio : '这个人很神秘，什么也没写~'}">
+        个人简介
+      </p>
+
+      <!-- 仅本人可见操作 -->
+      <div th:if="${isSelf}" class="mb-4">
+        <a th:href="@{'/user/' + ${user?.username} + '/edit'}" class="btn btn-outline-primary me-2">编辑资料</a>
+        <a th:href="@{/settings/privacy}" class="btn btn-outline-secondary">隐私设置</a>
+      </div>
+
+      <!-- 关注/取消关注按钮（非本人时显示） -->
+      <div th:if="${!isSelf}" class="mb-4">
+        <button id="followBtn"
+                class="btn px-4 py-2"
+                th:classappend="${isFollowing} ? 'btn-secondary' : 'btn-gradient'"
+                th:data-username="${user?.username}"
+                th:data-following="${isFollowing}">
+          <span th:text="${isFollowing} ? '取消关注' : '关注'"></span>
+        </button>
+      </div>
+
+      <!-- 数据统计：粉丝 & 关注 & 文章 -->
+      <div class="d-flex justify-content-center flex-wrap gap-3 mt-4">
+        <!-- 粉丝 -->
+        <div class="stat-badge">
+          <div class="fw-bold fs-5" th:text="${followersCount}">0</div>
+          <small>
+            <span th:if="${isSelf || user?.showFollowers}">
+              <a th:href="@{/user/{username}/followers(username=${user?.username})}">粉丝</a>
+            </span>
+            <span th:unless="${isSelf || user?.showFollowers}">粉丝</span>
+          </small>
+        </div>
+
+        <!-- 关注 -->
+        <div class="stat-badge">
+          <div class="fw-bold fs-5" th:text="${followingCount}">0</div>
+          <small>
+            <span th:if="${isSelf || user?.showFollowing}">
+              <a th:href="@{/user/{username}/following(username=${user?.username})}">关注</a>
+            </span>
+            <span th:unless="${isSelf || user?.showFollowing}">关注</span>
+          </small>
+        </div>
+
+        <!-- 文章 -->
+        <div class="stat-badge">
+          <div class="fw-bold fs-5" th:text="${totalPosts}">0</div>
+          <small>文章</small>
+        </div>
+      </div>
+
+      <!-- 额外统计信息 -->
+      <div class="mt-4 pt-3 border-top text-muted small">
+        <p class="mb-1">
+          <i class="bi bi-hand-thumbs-up"></i>
+          <a th:href="@{/user/{username}/liked-posts(username=${user?.username})}"
+             th:text="'点赞文章：' + ${totalLikedPosts}">点赞文章：0</a>
+        </p>
+        <p class="mb-0">
+          <i class="bi bi-star"></i>
+          收藏文章：<span th:text="${totalFavoritedPosts}">0</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 返回首页 -->
+    <div class="text-center">
+      <a th:href="@{/}" class="btn btn-outline-secondary">&larr; 返回首页</a>
+    </div>
   </div>
+</main>
 
-  <!-- 粉丝 & 关注 -->
-  <div class="d-flex gap-4 mb-4">
-    <p class="mb-0">
-      <span th:if="${isSelf || user?.showFollowers}">
-        <a th:href="@{/user/{username}/followers(username=${user?.username})}">粉丝</a>
-      </span>
-      <span th:unless="${isSelf || user?.showFollowers}">粉丝</span>
-      <span th:text="'：' + ${followersCount}"></span>
-    </p>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <p class="mb-0">
-      <span th:if="${isSelf || user?.showFollowing}">
-        <a th:href="@{/user/{username}/following(username=${user?.username})}">关注</a>
-      </span>
-      <span th:unless="${isSelf || user?.showFollowing}">关注</span>
-      <span th:text="'：' + ${followingCount}"></span>
-    </p>
-  </div>
-
-  <!-- 文章统计信息 -->
-  <div class="stats-section mb-4">
-    <!-- 文章总数 -->
-    <p class="mb-2">
-      文章总数：<span th:text="${totalPosts}"></span>
-    </p>
-    
-    <!-- 点赞文章总数 -->
-    <p class="mb-2">
-      <a th:href="@{/user/{username}/liked-posts(username=${user?.username})}" th:text="'点赞文章：' + ${totalLikedPosts}">点赞文章：0</a>
-    </p>
-    
-    <!-- 收藏文章总数 -->
-    <p class="mb-2">
-      收藏文章：<span th:text="${totalFavoritedPosts}"></span>
-    </p>
-  </div>
-
-  <!-- 关注/取消关注按钮（非本人时显示） -->
-  <div th:if="${!isSelf}" class="mt-4">
-    <button id="followBtn"
-            class="btn"
-            th:classappend="${isFollowing} ? 'btn-secondary' : 'btn-primary'"
-            th:data-username="${user?.username}"
-            th:data-following="${isFollowing}">
-      <span th:text="${isFollowing} ? '取消关注' : '关注'"></span>
-    </button>
-  </div>
-
-  <hr class="my-4">
-  <p><a th:href="@{/}" class="btn btn-link p-0">← 返回首页</a></p>
-
-</div>
-
+<!-- 关注逻辑（保持不变） -->
 <script>
-  // 简化的关注/取消关注功能
   document.addEventListener('DOMContentLoaded', function() {
     var followBtn = document.getElementById('followBtn');
-    
     if (!followBtn) return;
-    
+
     followBtn.addEventListener('click', function() {
       var username = this.getAttribute('data-username');
       var isFollowing = this.getAttribute('data-following') === 'true';
-      
+
       if (!username) {
         alert('用户名错误');
         return;
       }
-      
+
       var xhr = new XMLHttpRequest();
       xhr.open(isFollowing ? 'DELETE' : 'POST', '/api/follow/' + username);
       xhr.withCredentials = true;
-      
+
       xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
@@ -120,14 +197,24 @@
               var newFollowing = !isFollowing;
               followBtn.setAttribute('data-following', newFollowing.toString());
               followBtn.querySelector('span').textContent = newFollowing ? '取消关注' : '关注';
-              followBtn.className = 'btn ' + (newFollowing ? 'btn-secondary' : 'btn-primary');
+              followBtn.className = 'btn px-4 py-2 ' + (newFollowing ? 'btn-secondary' : 'btn-gradient');
             }
           } catch (e) {
-            alert('操作成功');
+            // 即使解析失败，也认为成功（兼容无返回体）
+            var newFollowing = !isFollowing;
+            followBtn.setAttribute('data-following', newFollowing.toString());
+            followBtn.querySelector('span').textContent = newFollowing ? '取消关注' : '关注';
+            followBtn.className = 'btn px-4 py-2 ' + (newFollowing ? 'btn-secondary' : 'btn-gradient');
           }
+        } else {
+          alert('操作失败，请稍后重试');
         }
       };
-      
+
+      xhr.onerror = function() {
+        alert('网络错误');
+      };
+
       xhr.send();
     });
   });

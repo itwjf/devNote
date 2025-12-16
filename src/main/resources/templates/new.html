@@ -3,51 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <title>写新文章 - DevNote</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 使用本地 Bootstrap（与首页一致） -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <!-- Bootstrap Icons（可选，用于装饰） -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- 自定义样式（含导航栏、卡片等） -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
-<body>
-<div class="container mt-4">
-    <h1>写新文章</h1>
+<body class="bg-light">
+<div class="site-shell">
+    <!-- ========== 导航栏（完全复用首页结构） ========== -->
+    <header class="site-header">
+        <div class="container-fluid px-4">
+            <nav class="navbar navbar-expand-lg navbar-dark py-3">
+                <a class="navbar-brand fs-3 fw-bold text-white" th:href="@{/}">DevNote</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto align-items-lg-center text-uppercase">
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/register}">注册</a></li>
+                    </ul>
+                    <div class="d-flex align-items-center ms-lg-4">
+                        <a class="btn btn-gradient btn-sm me-3" th:href="@{/posts/new}">发布灵感</a>
 
-    <!-- 表单提交到 /save，方法为 POST -->
-    <!-- th:object="${post}" 表示绑定一个 Post 对象 -->
-    <!-- Spring MVC 会自动把表单字段映射到 Post 的属性上 -->
-    <form th:object="${post}" action="/posts/save" method="post">
-        <div class="mb-3">
-            <label for="title" class="form-label">标题</label>
-            <!-- th:field="*{title}" 绑定 Post 的 title 字段 -->
-            <input type="text"
-                   id="title"
-                   th:field="*{title}"
-                   class="form-control"
-                   placeholder="请输入标题"
-                   required>
+                        <!-- 仅未登录时显示登录按钮 -->
+                        <div th:if="${currentUsername == null}">
+                            <a class="btn btn-outline-light btn-sm me-3" th:href="@{/login}">登录</a>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="/images/default-avatar.png" alt="avatar" class="header-avatar">
+                            <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
         </div>
+    </header>
 
-        <div class="form-group">
-            <label for="visibility">访问权限：</label>
-            <select id="visibility" name="visibility" th:field="*{visibility}" class="form-control">
-                <option value="PUBLIC" th:selected="${post.visibility == null || post.visibility == 'PUBLIC'}">公开</option>
-                <option value="FOLLOWERS" th:selected="${post.visibility == 'FOLLOWERS'}">粉丝可见</option>
-                <option value="PRIVATE" th:selected="${post.visibility == 'PRIVATE'}">仅自己可见</option>
-            </select>
+    <!-- ========== 主内容区：发布表单 ========== -->
+    <main class="main-content">
+        <div class="post-form-card bg-white p-5 rounded-3 shadow-sm border">
+            <h1 class="h2 mb-4 fw-bold text-dark">✍️ 写新文章</h1>
+
+            <form th:object="${post}" action="/posts/save" method="post">
+                <!-- 标题 -->
+                <div class="mb-4">
+                    <label for="title" class="form-label fw-medium">标题</label>
+                    <input type="text"
+                           id="title"
+                           th:field="*{title}"
+                           class="form-control form-control-lg"
+                           placeholder="请输入一个吸引人的标题"
+                           required>
+                </div>
+
+                <!-- 权限选择（美化为按钮组） -->
+                <div class="mb-4">
+                    <label class="form-label fw-medium">访问权限</label>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <div>
+                            <input class="btn-check" type="radio" name="visibility" id="vis-public" value="PUBLIC"
+                                   th:checked="${post.visibility == null || post.visibility == 'PUBLIC'}" required>
+                            <label class="btn btn-outline-primary" for="vis-public">公开</label>
+                        </div>
+                        <div>
+                            <input class="btn-check" type="radio" name="visibility" id="vis-followers" value="FOLLOWERS"
+                                   th:checked="${post.visibility == 'FOLLOWERS'}">
+                            <label class="btn btn-outline-info" for="vis-followers">粉丝可见</label>
+                        </div>
+                        <div>
+                            <input class="btn-check" type="radio" name="visibility" id="vis-private" value="PRIVATE"
+                                   th:checked="${post.visibility == 'PRIVATE'}">
+                            <label class="btn btn-outline-secondary" for="vis-private">仅自己</label>
+                        </div>
+                    </div>
+                    <div class="form-text text-muted mt-2">
+                        <i class="bi bi-eye"></i> 公开：所有人可见；<i class="bi bi-people"></i> 粉丝可见：关注你的人可见；<i class="bi bi-lock"></i> 仅自己：只有你能看
+                    </div>
+                </div>
+
+                <!-- 内容 -->
+                <div class="mb-4">
+                    <label for="content" class="form-label fw-medium">内容</label>
+                    <textarea id="content"
+                              th:field="*{content}"
+                              class="form-control"
+                              rows="12"
+                              placeholder="在这里写下你的想法、技术笔记或灵感..."
+                              required></textarea>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-gradient px-4">保存文章</button>
+                    <a href="/" class="btn btn-outline-secondary px-4">取消</a>
+                </div>
+            </form>
         </div>
-
-
-        <div class="mb-3">
-            <label for="content" class="form-label">内容</label>
-            <!-- th:field="*{content}" 绑定 content 字段 -->
-            <textarea id="content"
-                      th:field="*{content}"
-                      class="form-control"
-                      rows="10"
-                      placeholder="请输入内容"
-                      required></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-success">保存文章</button>
-        <a href="/" class="btn btn-secondary">取消</a>
-    </form>
+    </main>
 </div>
+
+<!-- Bootstrap JS -->
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

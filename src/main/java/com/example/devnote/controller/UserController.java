@@ -74,17 +74,14 @@ public class UserController {
 
         // 获取当前登录用户
         User currentUser = getLoggedInUser(authentication);
-        
-        // 判断当前登录用户是否是本人
-        boolean isSelf = authentication != null &&
-                authentication.isAuthenticated() &&
-                authentication.getName().equals(username);
+
+        String currentUsername = (currentUser != null) ? currentUser.getUsername() : null;
+        model.addAttribute("currentUsername", currentUsername);
+
+        boolean isSelf = currentUser != null && currentUser.getId().equals(user.getId());
 
         boolean isFollowing = false;
-
-        //如果当前用户已登录，判断是否已关注
-        if (!isSelf && authentication != null && authentication.isAuthenticated()){
-            String currentUsername = authentication.getName();
+        if (!isSelf && currentUser != null) {
             isFollowing = followService.isFollowing(currentUsername, username);
         }
 

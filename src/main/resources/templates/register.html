@@ -1,33 +1,125 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh">
 <head>
     <meta charset="UTF-8">
     <title>注册 - DevNote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .site-header {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        }
+        .register-card {
+            max-width: 480px;
+            margin: 3rem auto;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            background: white;
+        }
+        .logo-text {
+            font-weight: 700;
+            color: #0d6efd;
+            font-size: 1.8rem;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+    </style>
 </head>
-<body>
-<div class="container mt-4">
-    <h2>注册新用户</h2>
+<body class="bg-light">
 
-    <form action="/register" method="post">
-        <div class="mb-3">
-            <label for="username" class="form-label">用户名</label>
-            <input type="text" id="username" name="username" class="form-control" required>
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+    <div class="container-fluid px-4">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/login}">登录</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- ========== 注册表单 ========== -->
+<main class="py-4">
+    <div class="container">
+        <div class="register-card">
+            <div class="text-center mb-4">
+                <div class="logo-text">DevNote</div>
+                <h3 class="mt-2">创建新账号</h3>
+            </div>
+
+            <!-- 表单（支持 Thymeleaf 错误回显） -->
+            <form th:action="@{/register}" method="post">
+                <!-- 用户名 -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           class="form-control"
+                           required
+                           minlength="3"
+                           maxlength="20"
+                           pattern="[a-zA-Z0-9_]+"
+                           title="仅支持字母、数字和下划线，3-20 位">
+                </div>
+
+                <!-- 邮箱 -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">邮箱地址</label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           class="form-control"
+                           placeholder="your@email.com"
+                           required>
+                </div>
+
+                <!-- 密码 -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           class="form-control"
+                           required
+                           minlength="6"
+                           autocomplete="new-password">
+                    <div class="form-text text-muted small">至少 6 位字符</div>
+                </div>
+
+                <!-- 按钮组 -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary py-2">立即注册</button>
+                    <a th:href="@{/login}" class="btn btn-outline-secondary py-2 text-decoration-none">
+                        已有账号？<strong>去登录</strong>
+                    </a>
+                </div>
+            </form>
+
+            <!-- 错误提示区域（可选，用于后端验证失败时显示） -->
+            <div th:if="${errorMessage}" class="alert alert-danger mt-4 mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                <span th:text="${errorMessage}">注册失败，请重试。</span>
+            </div>
         </div>
+    </div>
+</main>
 
-        <div class="mb-3">
-            <label for="password" class="form-label">密码</label>
-            <input type="password" id="password" name="password" class="form-control" required>
-        </div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <div class="mb-3">
-            <label for="email" class="form-label">邮箱（必填）</label>
-            <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary">注册</button>
-        <a href="/login" class="btn btn-link">已有账号？登录</a>
-    </form>
-</div>
 </body>
 </html>

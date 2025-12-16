@@ -2,35 +2,152 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>编辑个人资料</title>
+    <title>编辑个人资料 - DevNote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- 自定义样式（可选） -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .site-header {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        }
+        .header-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile-card {
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 2rem;
+            background: white;
+        }
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #e9ecef;
+            margin-top: 0.5rem;
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .btn-save:hover {
+            background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+            color: white;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #6c757d;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: #0d6efd;
+            text-decoration: underline;
+        }
+    </style>
 </head>
-<body>
-<div class="container">
-    <h1>编辑个人资料</h1>
+<body class="bg-light">
 
-    <form th:action="@{'/user/' + ${user.username} + '/edit'}" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>用户名：</label>
-            <input type="text" th:value="${user.username}" readonly>
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+    <div class="container-fluid px-4">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
+
+                    <li class="nav-item ms-lg-4 d-flex align-items-center gap-2">
+                        <img src="/images/default-avatar.png" alt="avatar" class="header-avatar"
+                             th:if="${currentUsername != null}"
+                             th:src="${currentUserAvatar != null ? currentUserAvatar : '/images/default-avatar.png'}">
+                        <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- ========== 主内容区 ========== -->
+<main class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="profile-card">
+                    <h2 class="text-center mb-4">✏️ 编辑个人资料</h2>
+
+                    <form th:action="@{'/user/' + ${user.username} + '/edit'}" method="post" enctype="multipart/form-data">
+
+                        <!-- 用户名（只读） -->
+                        <div class="mb-4">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-control" th:value="${user.username}" readonly>
+                        </div>
+
+                        <!-- 个人简介 -->
+                        <div class="mb-4">
+                            <label class="form-label">个人简介</label>
+                            <textarea name="bio" class="form-control" rows="4" placeholder="介绍一下你自己吧~"
+                                      th:text="${user.bio}"></textarea>
+                        </div>
+
+                        <!-- 头像上传 -->
+                        <div class="mb-4">
+                            <label class="form-label">头像</label>
+                            <input type="file" name="avatar" class="form-control" accept="image/*">
+
+                            <!-- 头像预览 -->
+                            <div class="mt-2 text-center">
+                                <img th:if="${user.avatar != null}"
+                                     th:src="${user.avatar}"
+                                     alt="当前头像"
+                                     class="avatar-preview">
+                                <p th:unless="${user.avatar != null}" class="text-muted small mt-2">暂无头像</p>
+                            </div>
+                        </div>
+
+                        <!-- 提交按钮 -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn-save">💾 保存修改</button>
+                        </div>
+                    </form>
+
+                    <!-- 返回链接 -->
+                    <div class="text-center mt-3">
+                        <a th:href="@{'/user/' + ${user.username}}" class="back-link">
+                            ← 返回个人主页
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+</main>
 
-        <div class="form-group">
-            <label>个人简介：</label>
-            <textarea name="bio" rows="4" cols="50" th:text="${user.bio}"></textarea>
-        </div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <div class="form-group">
-            <label>头像：</label>
-            <input type="file" name="avatar">
-            <br>
-            <img th:if="${user.avatar != null}" th:src="${user.avatar}" alt="头像预览" class="avatar-preview">
-        </div>
-
-        <button type="submit" class="btn-save">保存修改</button>
-    </form>
-
-    <p><a th:href="@{'/user/' + ${user.username}}">返回个人主页</a></p>
-</div>
 </body>
 </html>

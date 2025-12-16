@@ -1,47 +1,134 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>隐私设置</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <title>隐私设置 - DevNote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons (可选) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .site-header {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        }
+        .header-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .settings-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            background: white;
+        }
+        .form-check-label {
+            font-size: 1.05rem;
+            color: #495057;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
 </head>
-<body>
-<div class="container">
-    <h2>隐私设置</h2>
+<body class="bg-light">
 
-    <form th:action="@{/settings/privacy/update}" method="post">
-        <div class="form-group">
-            <label>
-                <input type="checkbox" name="showFollowers"
-                       th:checked="${user.showFollowers}"> 公开粉丝列表
-            </label>
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+    <div class="container-fluid px-4">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
+
+                    <li class="nav-item ms-lg-4 d-flex align-items-center gap-2">
+                        <img src="/images/default-avatar.png" alt="avatar" class="header-avatar"
+                             th:if="${currentUsername != null}"
+                             th:src="${currentUserAvatar != null ? currentUserAvatar : '/images/default-avatar.png'}">
+                        <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+
+<!-- ========== 主内容区 ========== -->
+<main class="py-4">
+    <div class="container">
+        <div class="settings-card">
+            <h2 class="mb-4">🔒 隐私设置</h2>
+
+            <form th:action="@{/settings/privacy/update}" method="post">
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="showFollowers" name="showFollowers"
+                               th:checked="${user.showFollowers}">
+                        <label class="form-check-label" for="showFollowers">
+                            公开我的粉丝列表
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="showFollowing" name="showFollowing"
+                               th:checked="${user.showFollowing}">
+                        <label class="form-check-label" for="showFollowing">
+                            公开我的关注列表
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="showLikes" name="showLikes"
+                               th:checked="${user.showLikes}">
+                        <label class="form-check-label" for="showLikes">
+                            公开我的点赞列表
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="showFavorites" name="showFavorites"
+                               th:checked="${user.showFavorites}">
+                        <label class="form-check-label" for="showFavorites">
+                            公开我的收藏列表
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3">保存设置</button>
+            </form>
+
+            <!-- 成功提示 -->
+            <div th:if="${successMessage}" class="success-message mt-4">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${successMessage}">设置已保存</span>
+            </div>
         </div>
+    </div>
+</main>
 
-        <div class="form-group">
-            <label>
-                <input type="checkbox" name="showFollowing"
-                       th:checked="${user.showFollowing}"> 公开关注列表
-            </label>
-        </div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <div class="form-group">
-            <label>
-                <input type="checkbox" name="showLikes"
-                       th:checked="${user.showLikes}"> 公开点赞列表
-            </label>
-        </div>
-
-        <div class="form-group">
-            <label>
-                <input type="checkbox" name="showFavorites"
-                       th:checked="${user.showFavorites}"> 公开收藏列表
-            </label>
-        </div>
-
-        <button type="submit" class="btn">保存设置</button>
-    </form>
-
-    <p th:if="${successMessage}" th:text="${successMessage}" class="success"></p>
-</div>
 </body>
 </html>

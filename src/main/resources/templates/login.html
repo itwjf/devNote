@@ -1,39 +1,110 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="zh">
 <head>
   <meta charset="UTF-8">
   <title>登录 - DevNote</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .site-header {
+      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    }
+    .login-card {
+      max-width: 420px;
+      margin: 3rem auto;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      background: white;
+    }
+    .logo-text {
+      font-weight: 700;
+      color: #0d6efd;
+      font-size: 1.8rem;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+  </style>
 </head>
-<body>
-<div class="container mt-5" style="max-width: 400px;">
-  <h3 class="mb-3 text-center">用户登录</h3>
+<body class="bg-light">
 
-  <!-- 登录表单，Spring Security 会自动处理 -->
-  <form th:action="@{/login}" method="post">
-    <div class="mb-3">
-      <label for="username" class="form-label">用户名</label>
-      <input type="text" id="username" name="username" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-      <label for="password" class="form-label">密码</label>
-      <input type="password" id="password" name="password" class="form-control" required>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">登录</button>
-
-    <div class="mt-3 text-center">
-      <a href="/register">还没有账号？去注册</a>
-    </div>
-  </form>
-
-  <div th:if="${param.error}" class="alert alert-danger mt-3">
-    用户名或密码错误！
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+  <div class="container-fluid px-4">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/register}">注册</a></li>
+        </ul>
+      </div>
+    </nav>
   </div>
-  <div th:if="${param.logout}" class="alert alert-success mt-3">
-    已成功登出。
+</header>
+
+<!-- ========== 登录表单 ========== -->
+<main class="py-4">
+  <div class="container">
+    <div class="login-card">
+      <div class="text-center mb-4">
+        <div class="logo-text">DevNote</div>
+        <h3 class="mt-2">用户登录</h3>
+      </div>
+
+      <!-- Spring Security 标准登录表单 -->
+      <form th:action="@{/login}" method="post">
+        <div class="mb-3">
+          <label for="username" class="form-label">用户名</label>
+          <input type="text"
+                 id="username"
+                 name="username"
+                 class="form-control"
+                 required
+                 autofocus
+                 autocomplete="username">
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">密码</label>
+          <input type="password"
+                 id="password"
+                 name="password"
+                 class="form-control"
+                 required
+                 autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2">登录账号</button>
+      </form>
+
+      <div class="text-center mt-3">
+        <a th:href="@{/register}" class="text-decoration-none">还没有账号？<strong>立即注册</strong></a>
+      </div>
+
+      <!-- 错误/成功提示 -->
+      <div th:if="${param.error}" class="alert alert-danger mt-4 mb-0">
+        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+        用户名或密码错误，请重试。
+      </div>
+      <div th:if="${param.logout}" class="alert alert-success mt-4 mb-0">
+        <i class="bi bi-check-circle-fill me-1"></i>
+        你已成功退出登录。
+      </div>
+    </div>
   </div>
-</div>
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

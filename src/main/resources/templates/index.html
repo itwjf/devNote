@@ -8,69 +8,97 @@
     <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
     <!-- 加载 Bootstrap Icons（使用CDN，本地没有此文件） -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- 再加载你的自定义样式（本地文件） -->
+    <!-- 再加载自定义样式（本地文件） -->
     <link th:href="@{/css/style.css}" rel="stylesheet">
 </head>
-<body>
-<div class="container mt-4 mb-8 max-w-4xl mx-auto">
-    <!-- 引入导航栏片段 -->
-    <div th:replace="~{fragments/navbar :: nav}"></div>
-    
-    <!-- 网站标题部分 -->
-    <div class="mb-8 text-center">
-        
-        <!-- 用户状态显示 --<div class="flex justify-center">
-            <p th:if="${currentUsername}" class="bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm">
-                当前登录: <span class="font-medium"><span th:text="${currentUsername}"></span></span>
-            </p>
-            <p th:unless="${currentUsername}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm">您尚未登录</p>
-        </div>
-    </div>
-        -->
-    
-    <!-- 最新文章标题 -->
-    
-    <!-- 文章列表 -->
-    <div class="container mt-4">
-        <div th:if="${not posts.empty}">
-            <div class="row">
-                <div class="col-12" th:each="post : ${posts}">
-                    <div class="card mb-4 border border-gray-200 shadow-sm rounded-lg hover:shadow-md transition-shadow duration-300">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h2 class="card-title mb-0"><a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}" class="text-dark hover:text-primary text-decoration-none font-bold"></a></h2>
-                                <div>
-                                    <span th:if="${post.visibility == 'PUBLIC'}" class="badge bg-primary">公开</span>
-                                    <span th:if="${post.visibility == 'FOLLOWERS'}" class="badge bg-info">粉丝可见</span>
-                                    <span th:if="${post.visibility == 'PRIVATE'}" class="badge bg-secondary">私密</span>
-                                </div>
-                            </div>
-                            <div class="mb-2 text-muted small">
-                                <span>作者: <a th:href="@{'/user/' + ${post.author.username}}" th:text="${post.author.username}" class="text-primary hover:text-primary-dark text-decoration-none font-medium"></a></span>
-                                <span class="mx-2">•</span>
-                                <span>发布时间: <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></span></span>
-                            </div>
-                            <p class="card-text text-gray-700 mb-3"><span th:text="${post.content.length() gt 200 ? post.content.substring(0, 200) + '...' : post.content}"></span></p>
-                            <a th:href="@{/posts/{id}(id=${post.id})}" class="btn btn-primary btn-sm">阅读全文</a>
+<body class="bg-light">
+<div class="site-shell">
+    <header class="site-header">
+        <div class="container-fluid px-4">
+            <nav class="navbar navbar-expand-lg navbar-dark py-3">
+                <a class="navbar-brand fs-3 fw-bold text-white" th:href="@{/}">
+                    DevNote
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto align-items-lg-center text-uppercase">
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
+                        <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/register}">注册</a></li>
+                    </ul>
+                    <div class="d-flex align-items-center ms-lg-4">
+                        <a class="btn btn-gradient btn-sm me-3" th:href="@{/posts/new}">发布灵感</a>
+
+                        <!-- 仅未登录时显示登录按钮 -->
+                        <div th:if="${currentUsername == null}">
+                            <a class="btn btn-outline-light btn-sm me-3" th:href="@{/login}">登录</a>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="/images/default-avatar.png" alt="avatar" class="header-avatar">
+                            <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
                         </div>
                     </div>
                 </div>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="main-content">
+
+        <section class="posts-section">
+            <div class="section-heading d-flex justify-content-between align-items-center">
+                <h2 class="section-title">近期文章</h2>
+                <a th:href="@{/posts}" class="text-decoration-none text-primary">查看全部 <i class="bi bi-arrow-right"></i></a>
             </div>
-        </div>
-        <div th:unless="${not posts.empty}" class="alert alert-info">
-            暂无文章
-        </div>
-        <div th:if="${posts}" class="mt-6 mb-2 text-center">
-            <p class="text-gray-600 bg-gray-50 py-2 px-4 rounded-lg inline-block">
-                共有 <span class="font-semibold text-primary"><span th:text="${posts.size()}"></span></span> 篇文章
-            </p>
-        </div>
-    </div>
-    
-    <!-- 加载 Bootstrap JavaScript（本地文件） -->
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
-    
-    <!-- 如果有自定义脚本，可以放在这里 -->
-    <!-- <script th:src="@{/js/main.js}"></script> -->
+
+            <div th:if="${not posts.empty}">
+                <div class="row g-4">
+                    <article class="col-md-6" th:each="post : ${posts}">
+                        <div class="card post-card h-100">
+                            <div class="card-body d-flex flex-column">
+
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h3 class="h5 mb-1">
+                                            <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}" class="text-decoration-none text-dark"></a>
+                                        </h3>
+                                        <p class="text-muted small mb-0">
+                                            <span>作者 <a th:href="@{'/user/' + ${post.author.username}}" th:text="${post.author.username}" class="text-primary"></a></span>
+                                            <span class="mx-2">•</span>
+                                            <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}"></span>
+                                        </p>
+                                    </div>
+                                    <!-- ✅ 使用 Bootstrap 5 的 bg-* 类 -->
+                                    <span class="badge"
+                                          th:classappend="
+                                            ${post.visibility == 'PUBLIC'} ? ' bg-primary' :
+                                            (${post.visibility == 'FOLLOWERS'} ? ' bg-info' : ' bg-secondary')"
+                                          th:text="${post.visibility == 'PUBLIC' ? '公开' :
+                                                   (post.visibility == 'FOLLOWERS' ? '粉丝可见' : '私密')}">
+                                    </span>
+                                </div>
+
+
+                                <p class="post-preview flex-grow-1" th:text="${post.content.length() gt 180 ? post.content.substring(0, 180) + '...' : post.content}"></p>
+                                <div class="mt-3">
+                                    <a th:href="@{/posts/{id}(id=${post.id})}" class="btn btn-sm btn-outline-primary">阅读全文</a>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+            <div th:unless="${not posts.empty}" class="alert alert-light mt-4">暂无文章，来写一篇首发吧！</div>
+        </section>
+    </main>
+</div>
+
+<!-- 加载 Bootstrap JavaScript（本地文件） -->
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

@@ -1,110 +1,224 @@
-<!-- liked_posts.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <title th:text="${user.username} + 的点赞文章"> </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .site-header {
+      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    }
+    .header-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .post-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 1rem;
+      transition: transform 0.2s;
+    }
+    .post-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .post-title {
+      font-size: 1.25rem;
+      color: #212529;
+      text-decoration: none;
+    }
+    .post-title:hover {
+      color: #0d6efd;
+    }
+    .btn-unlike {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+    .btn-unlike:hover {
+      background: #ff5252;
+      color: white;
+    }
+    .pagination-btn {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      padding: 0.375rem 0.75rem;
+      margin: 0 0.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pagination-btn:hover {
+      background: #e9ecef;
+    }
+    .empty-message {
+      text-align: center;
+      color: #6c757d;
+      padding: 2rem;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-light">
 
-<div class="container">
-  <h2 th:text="${user.username} + ' 的点赞文章'"></h2>
-  <!-- 返回个人主页按钮 -->
-  <a th:href="@{/user/{username}(username=${user.username})}"
-     style="display: inline-block; margin-bottom: 15px; color: #007bff; text-decoration: none;">
-    ← 返回 [[${user.username}]] 的个人主页
-  </a>
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+  <div class="container-fluid px-4">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
 
-    <div id = "liked-posts-container"> </div>
-  <!-- AJAX 动态填充 -->
-</div>
+          <li class="nav-item ms-lg-4 d-flex align-items-center gap-2">
+            <img src="/images/default-avatar.png" alt="avatar" class="header-avatar"
+                 th:if="${currentUsername != null}"
+                 th:src="${currentUserAvatar != null ? currentUserAvatar : '/images/default-avatar.png'}">
+            <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>
 
-  <script th:inline="javascript">
-    /*<![CDATA[*/
-    const username = /*[[${user.username}]]*/ 'default';
-    const currentPage = /*[[${page}]]*/ 1; // 初始页（可选）
+<!-- ========== 主内容区 ========== -->
+<main class="py-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <!-- 标题 -->
+        <h2 class="mb-3" th:text="${user.username} + ' 的' + (${isFavoritedPage} ? '收藏文章' : '点赞文章')"></h2>
 
-    async function loadLikedPosts(page = 1) {
-      const size = 5;
-      const url = `/api/user/${username}/liked-posts?page=${page - 1}&size=${size}`;
+        <!-- 返回链接 -->
+        <a th:href="@{/user/{username}(username=${user.username})}"
+           class="text-decoration-none mb-4 d-inline-block text-primary">
+          ← 返回 [[${user.username}]] 的个人主页
+        </a>
 
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || '加载失败');
-        }
-        const data = await response.json();
+        <!-- 动态内容容器 -->
+        <div id="liked-posts-container">
+          <!-- 加载中提示（可选） -->
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">加载中...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
 
-        let html = '';
-        if (data.content.length === 0) {
-          html = '<p>暂无点赞文章</p>';
-        } else {
-          data.content.forEach(post => {
-            html += `
-                        <div class="post-item" style="border-bottom: 1px solid #eee; padding: 10px 0;">
-                            <h3>
-                                <a href="/post/${post.id}" style="text-decoration: none; color: #333;">
-                                    ${post.title}
-                                </a>
-                            </h3>
-                            <button
-                                type="button"
-                                onclick="unlikePost(${post.id})"
-                                style="margin-left: 10px; background: #ff6b6b; color: white; border: none; padding: 4px 8px; border-radius: 4px;">
-                                取消喜欢
-                            </button>
-                        </div>
-                    `;
-          });
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  const username = /*[[${user.username}]]*/ 'default';
+  const isFavoritedPage = /*[[${isFavoritedPage}]]*/ false; // true = 收藏页，false = 点赞页
 
-          // 分页控件
-          html += `<div style="margin-top: 20px;">`;
-          if (data.hasPrevious) {
-            html += `<button onclick="loadLikedPosts(${data.currentPage - 1})">上一页</button>`;
-          }
-          html += ` <span>第 ${data.currentPage} / ${data.totalPages} 页</span> `;
-          if (data.hasNext) {
-            html += `<button onclick="loadLikedPosts(${data.currentPage + 1})">下一页</button>`;
-          }
-          html += `</div>`;
-        }
+  async function loadPosts(page = 1) {
+    const size = 5;
+    // 根据页面类型选择 API 路径
+    const endpoint = isFavoritedPage ? 'favorited-posts' : 'liked-posts';
+    const url = `/api/user/${username}/${endpoint}?page=${page - 1}&size=${size}`;
 
-        document.getElementById('liked-posts-container').innerHTML = html;
-      } catch (error) {
-        console.error('加载失败:', error);
-        document.getElementById('liked-posts-container').innerHTML =
-                `<p style="color: red;">${error.message}</p>`;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || '加载失败');
       }
+      const data = await response.json();
+
+      let html = '';
+
+      if (data.content && data.content.length > 0) {
+        data.content.forEach(post => {
+          html += `
+          <div class="card post-card">
+            <div class="card-body">
+              <h3 class="card-title mb-2">
+                <a href="/post/${post.id}" class="post-title">${post.title}</a>
+              </h3>
+              <p class="card-text text-muted small">
+                ${post.summary || ''}
+              </p>
+              <button type="button" onclick="removeAction(${post.id})" class="btn-unlike">
+                ${isFavoritedPage ? '取消收藏' : '取消喜欢'}
+              </button>
+            </div>
+          </div>
+        `;
+        });
+
+        // 分页控件
+        html += `<div class="d-flex justify-content-center align-items-center mt-4 gap-2">`;
+        if (data.hasPrevious) {
+          html += `<button class="pagination-btn" onclick="loadPosts(${data.currentPage - 1})">上一页</button>`;
+        }
+        html += `<span class="text-muted">第 ${data.currentPage} / ${data.totalPages} 页</span>`;
+        if (data.hasNext) {
+          html += `<button class="pagination-btn" onclick="loadPosts(${data.currentPage + 1})">下一页</button>`;
+        }
+        html += `</div>`;
+      } else {
+        html = `<div class="empty-message">
+                <i class="bi bi-heartbreak-fill" style="font-size: 2rem; color: #adb5bd;"></i>
+                <p class="mt-2">${isFavoritedPage ? '暂无收藏文章' : '暂无点赞文章'}</p>
+              </div>`;
+      }
+
+      document.getElementById('liked-posts-container').innerHTML = html;
+    } catch (error) {
+      console.error('加载失败:', error);
+      document.getElementById('liked-posts-container').innerHTML =
+              `<div class="alert alert-danger text-center">⚠️ ${error.message}</div>`;
     }
+  }
 
-    function unlikePost(postId) {
-      if (!confirm('确定要取消喜欢吗？')) return;
+  function removeAction(postId) {
+    if (!confirm(`确定要${isFavoritedPage ? '取消收藏' : '取消喜欢'}这篇文章吗？`)) return;
 
-      fetch(`/api/posts/${postId}/unlike`, { method: 'DELETE' })
-              .then(res => {
-                if (res.ok) {
-                  // 重新加载当前页
-                  const currentContainer = document.getElementById('liked-posts-container');
-                  const currentPageMatch = currentContainer.innerHTML.match(/第 (\d+) \/ \d+ 页/);
-                  const currentPage = currentPageMatch ? parseInt(currentPageMatch[1]) : 1;
-                  loadLikedPosts(currentPage);
-                } else {
-                  alert('取消失败');
-                }
-              })
-              .catch(err => {
-                console.error('取消喜欢失败:', err);
-                alert('网络错误');
-              });
-    }
+    const endpoint = isFavoritedPage ? 'unfavorite' : 'unlike';
+    fetch(`/api/posts/${postId}/${endpoint}`, { method: 'DELETE' })
+            .then(res => {
+              if (res.ok) {
+                // 重新加载当前页（从分页信息中提取当前页码）
+                const container = document.getElementById('liked-posts-container');
+                const match = container.innerHTML.match(/第 (\d+) \/ \d+ 页/);
+                const currentPage = match ? parseInt(match[1]) : 1;
+                loadPosts(currentPage);
+              } else {
+                alert('操作失败，请重试');
+              }
+            })
+            .catch(err => {
+              console.error('操作失败:', err);
+              alert('网络错误');
+            });
+  }
 
-    // 页面加载时自动加载第一页
-    document.addEventListener('DOMContentLoaded', () => {
-      loadLikedPosts(1);
-    });
-    /*]]>*/
-  </script>
+  // 页面加载完成后自动加载第一页
+  document.addEventListener('DOMContentLoaded', () => {
+    loadPosts(1);
+  });
+  /*]]>*/
+</script>
 
-  </body>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
 </html>

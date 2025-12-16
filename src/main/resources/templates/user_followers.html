@@ -3,115 +3,162 @@
 <head>
   <meta charset="UTF-8">
   <title th:text="${profileUser.username + ' 的粉丝 - DevNote'}">用户粉丝 - DevNote</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
-    body {
-      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
-      margin: 40px auto;
-      max-width: 800px;
-      background-color: #fafafa;
-      color: #333;
+    .site-header {
+      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
     }
-    h2 {
-      margin-bottom: 20px;
-      color: #222;
+    .header-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
     }
     .user-card {
       display: flex;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #eee;
+      padding: 1rem;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+      transition: box-shadow 0.2s;
+    }
+    .user-card:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     .avatar {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       object-fit: cover;
-      margin-right: 12px;
-      background-color: #ddd;
-    }
-    .pagination {
-      margin: 20px 0;
-      text-align: center;
-    }
-    .pagination a {
-      margin: 0 6px;
-      text-decoration: none;
-      color: #007bff;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-    .pagination a:hover {
-      background-color: #f0f8ff;
-    }
-    .pagination .current {
-      font-weight: bold;
-      color: #333;
-      background-color: #e9ecef;
-      padding: 4px 8px;
-      border-radius: 4px;
+      background-color: #f0f0f0;
+      margin-right: 1rem;
     }
     .empty-message {
-      color: #666;
-      font-style: italic;
-      padding: 20px 0;
+      text-align: center;
+      color: #6c757d;
+      padding: 2.5rem 1rem;
     }
     .back-link {
       display: inline-block;
-      margin-top: 20px;
-      color: #007bff;
+      margin-top: 1.5rem;
+      color: #0d6efd;
       text-decoration: none;
     }
     .back-link:hover {
       text-decoration: underline;
     }
+    .pagination .page-item.active .page-link {
+      background-color: #0d6efd;
+      border-color: #0d6efd;
+    }
   </style>
 </head>
-<body>
+<body class="bg-light">
 
-<h2>
-  <span th:text="${profileUser.username}"></span> 的粉丝
-  (<span th:text="${followersPage.totalElements}"></span>)
-</h2>
+<!-- ========== 导航栏 ========== -->
+<header class="site-header text-white py-2">
+  <div class="container-fluid px-4">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
 
-<div th:if="${followersPage.totalElements == 0}">
-  <p class="empty-message">暂无粉丝</p>
-</div>
-
-<div th:unless="${followersPage.totalElements == 0}">
-  <div class="user-card" th:each="user : ${followersPage.content}">
-    <img th:src="${user.avatar != null ? user.avatar : '/images/default-avatar.png'}"
-         th:alt="${user.username}"
-         class="avatar"/>
-    <span th:text="${user.username}"></span>
+          <li class="nav-item ms-lg-4 d-flex align-items-center gap-2">
+            <img src="/images/default-avatar.png" alt="avatar" class="header-avatar"
+                 th:if="${currentUsername != null}"
+                 th:src="${currentUserAvatar != null ? currentUserAvatar : '/images/default-avatar.png'}">
+            <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
+          </li>
+        </ul>
+      </div>
+    </nav>
   </div>
-</div>
+</header>
 
-<!-- 分页控件 -->
-<div class="pagination" th:if="${followersPage.totalPages > 1}">
-  <a th:if="${followersPage.number > 0}"
-     th:href="@{/user/{username}/followers(username=${profileUser.username}, page=${followersPage.number - 1})}">
-    上一页
-  </a>
+<!-- ========== 主内容区 ========== -->
+<main class="py-4">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <!-- 标题 -->
+        <h2 class="mb-3">
+          <span th:text="${profileUser.username}"></span> 的粉丝
+          <small class="text-muted">(共 <span th:text="${followersPage.totalElements}"></span> 人)</small>
+        </h2>
 
-  <span th:each="i : ${#numbers.sequence(0, followersPage.totalPages - 1)}">
-        <a th:if="${i != followersPage.number}"
-           th:href="@{/user/{username}/followers(username=${profileUser.username}, page=${i})}"
-           th:text="${i + 1}">1</a>
-        <span th:if="${i == followersPage.number}" class="current" th:text="${i + 1}">1</span>
-    </span>
+        <!-- 返回链接 -->
+        <a th:href="@{/user/{username}(username=${profileUser.username})}"
+           class="back-link">
+          ← 返回 [[${profileUser.username}]] 的主页
+        </a>
 
-  <a th:if="${followersPage.number + 1 < followersPage.totalPages}"
-     th:href="@{/user/{username}/followers(username=${profileUser.username}, page=${followersPage.number + 1})}">
-    下一页
-  </a>
-</div>
+        <!-- 粉丝列表 -->
+        <div th:if="${followersPage.empty}" class="empty-message">
+          <i class="bi bi-people-fill" style="font-size: 2rem; color: #adb5bd;"></i>
+          <p class="mt-2">还没有人关注 [[${profileUser.username}]]</p>
+        </div>
 
-<a th:href="@{/user/{username}(username=${profileUser.username})}"
-   class="back-link">
-  &larr; 返回
-  <span th:text="${profileUser.username}"></span>
-  的主页
-</a>
+        <div th:unless="${followersPage.empty}">
+          <div class="user-card" th:each="user : ${followersPage.content}">
+            <img th:src="${user.avatar != null ? user.avatar : '/images/default-avatar.png'}"
+                 th:alt="${user.username}"
+                 class="avatar"/>
+            <div>
+              <a th:href="@{/user/{username}(username=${user.username})}"
+                 class="text-decoration-none text-dark fw-medium"
+                 th:text="${user.username}">
+                用户名
+              </a>
+            </div>
+          </div>
+
+          <!-- 分页（Bootstrap 风格） -->
+          <nav aria-label="粉丝分页" th:if="${followersPage.totalPages > 1}" class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" th:classappend="${!followersPage.hasPrevious()} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/user/{username}/followers(username=${profileUser.username}, page=${followersPage.number - 1})}"
+                   th:if="${followersPage.hasPrevious()}">上一页</a>
+                <span class="page-link" th:unless="${followersPage.hasPrevious()}">上一页</span>
+              </li>
+
+              <!-- 只显示部分页码（避免太多按钮） -->
+              <li class="page-item" th:each="i : ${#numbers.sequence(0, followersPage.totalPages - 1)}"
+                  th:if="${i >= followersPage.number - 2 && i <= followersPage.number + 2 && i >= 0 && i < followersPage.totalPages}">
+                <a class="page-link"
+                   th:href="@{/user/{username}/followers(username=${profileUser.username}, page=${i})}"
+                   th:text="${i + 1}"
+                   th:classappend="${i == followersPage.number} ? 'active' : ''">1</a>
+              </li>
+
+              <li class="page-item" th:classappend="${!followersPage.hasNext()} ? 'disabled'">
+                <a class="page-link"
+                   th:href="@{/user/{username}/followers(username=${profileUser.username}, page=${followersPage.number + 1})}"
+                   th:if="${followersPage.hasNext()}">下一页</a>
+                <span class="page-link" th:unless="${followersPage.hasNext()}">下一页</span>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
