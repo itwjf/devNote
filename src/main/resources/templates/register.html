@@ -9,9 +9,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        .site-header {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-        }
+
         .register-card {
             max-width: 480px;
             margin: 3rem auto;
@@ -29,27 +27,17 @@
             font-weight: 500;
         }
     </style>
+
+    <!-- 导航栏样式 -->
+    <style th:replace="~{fragments/header :: navbar-style}"></style>
+
+
 </head>
 <body class="bg-light">
 
 <!-- ========== 导航栏 ========== -->
-<header class="site-header text-white py-2">
-    <div class="container-fluid px-4">
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
-                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
-                    <li class="nav-item mx-2"><a class="nav-link" th:href="@{/login}">登录</a></li>
-                </ul>
-            </div>
-        </nav>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: navbar}"></header>
+
 
 <!-- ========== 注册表单 ========== -->
 <main class="py-4">

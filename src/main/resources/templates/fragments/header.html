@@ -1,0 +1,106 @@
+<!-- templates/fragments/header.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Fragment - Header</title>
+</head>
+<body>
+
+<header th:fragment="navbar" class="site-header text-white py-2">
+  <div class="container-fluid px-4">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand fs-4 fw-bold" th:href="@{/}">DevNote</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ms-auto align-items-center">
+
+          <!-- 公共导航项 -->
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/}">首页</a></li>
+          <li class="nav-item mx-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
+          <li class="nav-item mx-2" th:if="${currentUsername != null}">
+            <a class="nav-link" th:href="@{/posts/new}">写文章</a>
+          </li>
+
+          <!-- 用户状态区 -->
+          <li class="nav-item ms-lg-4" th:unless="${currentUsername != null}">
+            <a class="nav-link" th:href="@{/login}">登录</a>
+          </li>
+
+          <!-- 已登录：带下拉菜单的用户头像+用户名 -->
+          <li class="nav-item ms-lg-4 dropdown" th:if="${currentUsername != null}">
+            <a class="nav-link d-flex align-items-center gap-2 dropdown-toggle"
+               href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img th:src="${currentUserAvatar != null ? currentUserAvatar : '/images/default-avatar.png'}"
+                   alt="avatar" class="header-avatar">
+              <span th:text="${currentUsername}"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end mt-2">
+              <!-- 个人主页 -->
+              <li>
+                <a class="dropdown-item" th:href="@{'/user/' + ${currentUsername}}">
+                  <i class="bi bi-person me-2"></i>个人主页
+                </a>
+              </li>
+              <!-- 我的文章 -->
+              <li>
+                <a class="dropdown-item" th:href="@{/my/posts}">
+                  <i class="bi bi-journal-text me-2"></i>我的文章
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <!-- 隐私设置 -->
+              <li>
+                <a class="dropdown-item" th:href="@{/settings/privacy}">
+                  <i class="bi bi-shield-lock me-2"></i>隐私设置
+                </a>
+              </li>
+              <!-- 账号设置（可选） -->
+              <!--
+              <li>
+                <a class="dropdown-item" th:href="@{/settings/account}">
+                  <i class="bi bi-gear me-2"></i>账号设置
+                </a>
+              </li>
+              -->
+              <li><hr class="dropdown-divider"></li>
+              <!-- 退出登录 -->
+              <li>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                  <button type="submit" class="dropdown-item text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>退出登录
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<style th:fragment="navbar-style">
+  .site-header {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+  }
+  .header-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  /* 确保下拉菜单在深色背景上清晰可见 */
+  .dropdown-menu {
+    --bs-dropdown-bg: #ffffff;
+    --bs-dropdown-border-color: #dee2e6;
+    --bs-dropdown-link-color: #212529;
+    --bs-dropdown-link-hover-bg: #f8f9fa;
+  }
+</style>
+
+</body>
+</html>

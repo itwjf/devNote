@@ -13,38 +13,9 @@
 </head>
 <body class="bg-light">
 <div class="site-shell">
+
   <!-- ========== 导航栏 ========== -->
-  <header class="site-header">
-    <div class="container-fluid px-4">
-      <nav class="navbar navbar-expand-lg navbar-dark py-3">
-        <a class="navbar-brand fs-3 fw-bold text-white" th:href="@{/}">DevNote</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNavbar">
-          <ul class="navbar-nav ms-auto align-items-lg-center text-uppercase">
-            <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/}">首页</a></li>
-            <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/posts}">文章</a></li>
-            <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/posts/new}">写文章</a></li>
-            <li class="nav-item mx-lg-2"><a class="nav-link" th:href="@{/register}">注册</a></li>
-          </ul>
-          <div class="d-flex align-items-center ms-lg-4">
-            <a class="btn btn-gradient btn-sm me-3" th:href="@{/posts/new}">发布灵感</a>
-
-            <div th:if="${currentUsername == null}">
-              <a class="btn btn-outline-light btn-sm me-3" th:href="@{/login}">登录</a>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-              <img src="/images/default-avatar.png" alt="avatar" class="header-avatar">
-              <span th:text="${currentUsername != null ? currentUsername : '游客'}"></span>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </div>
-  </header>
+  <header th:replace="~{fragments/header :: navbar}"></header>
 
   <!-- ========== 主内容区 ========== -->
   <main class="main-content">
